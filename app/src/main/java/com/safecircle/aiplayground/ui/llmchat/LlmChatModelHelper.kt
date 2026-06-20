@@ -109,18 +109,9 @@ object LlmChatModelHelper : LlmModelHelper {
     Log.d(TAG, "Preferred backend: $preferredBackend")
 
     val modelPath = model.getPath(context = context)
-    val engineConfig =
-      EngineConfig(
-        modelPath = modelPath,
-        backend = preferredBackend,
-        visionBackend = if (shouldEnableImage) visionBackend else null,
-        audioBackend = if (shouldEnableAudio) Backend.CPU() else null,
-        cacheDir = context.cacheDir.absolutePath,
-      )
 
     // Check if the model file supports speculative decoding.
     var supportsSpeculativeDecoding = false
-    // Check if the model file supports speculative decoding.
     try {
       com.google.ai.edge.litertlm.Capabilities(modelPath).use {
         supportsSpeculativeDecoding = it.hasSpeculativeDecodingSupport()
@@ -128,41 +119,69 @@ object LlmChatModelHelper : LlmModelHelper {
     } catch (e: Exception) {
       // Ignore exceptions and assume not supported.
     }
-    // Create an instance of LiteRT LM engine and conversation.
-    try {
-      var speculativeDecoding = false
-      // Check if the model supports speculative decoding for the given task type and if the
-      // speculative decoding is enabled in the settings.
-      if (
-        supportsSpeculativeDecoding &&
-          model.capabilityToTaskTypes[ModelCapability.SPECULATIVE_DECODING]?.contains(taskId) ==
-            true
-      ) {
-        speculativeDecoding =
-          model.getBooleanConfigValue(
-            key = ConfigKeys.ENABLE_SPECULATIVE_DECODING,
-            defaultValue = false,
-          )
-      }
-      ExperimentalFlags.enableSpeculativeDecoding = speculativeDecoding
-      Log.d(TAG, "Speculative decoding enabled: $speculativeDecoding")
-      val engine = Engine(engineConfig)
-      engine.initialize()
-      ExperimentalFlags.enableSpeculativeDecoding = false
 
-      ExperimentalFlags.enableConversationConstrainedDecoding =
-        enableConversationConstrainedDecoding
-      val conversation =
-        engine.createConversation(
-          ConversationConfig(
-            systemInstruction = systemInstruction,
-            tools = tools,
-          )
+    // Try the preferred backend first; if it fails (e.g. GPU can't fully delegate all ops),
+    // fall back to CPU automatically.
+    val backendsToTry =
+      if (preferredBackend is Backend.CPU) listOf(preferredBackend)
+      else listOf(preferredBackend, Backend.CPU())
+
+    var lastError: String? = null
+    var initialized = false
+
+    for (backend in backendsToTry) {
+      val engineConfig =
+        EngineConfig(
+          modelPath = modelPath,
+          backend = backend,
+          visionBackend = if (shouldEnableImage) visionBackend else null,
+          audioBackend = if (shouldEnableAudio) Backend.CPU() else null,
+          cacheDir = context.cacheDir.absolutePath,
         )
-      ExperimentalFlags.enableConversationConstrainedDecoding = false
-      model.instance = LlmModelInstance(engine = engine, conversation = conversation)
-    } catch (e: Exception) {
-      onDone(cleanUpMediapipeTaskErrorMessage(e.message ?: "Unknown error"))
+      Log.d(TAG, "Trying backend: $backend")
+      try {
+        var speculativeDecoding = false
+        if (
+          supportsSpeculativeDecoding &&
+            model.capabilityToTaskTypes[ModelCapability.SPECULATIVE_DECODING]?.contains(taskId) ==
+              true
+        ) {
+          speculativeDecoding =
+            model.getBooleanConfigValue(
+              key = ConfigKeys.ENABLE_SPECULATIVE_DECODING,
+              defaultValue = false,
+            )
+        }
+        ExperimentalFlags.enableSpeculativeDecoding = speculativeDecoding
+        Log.d(TAG, "Speculative decoding enabled: $speculativeDecoding")
+        val engine = Engine(engineConfig)
+        engine.initialize()
+        ExperimentalFlags.enableSpeculativeDecoding = false
+
+        ExperimentalFlags.enableConversationConstrainedDecoding =
+          enableConversationConstrainedDecoding
+        val conversation =
+          engine.createConversation(
+            ConversationConfig(
+              systemInstruction = systemInstruction,
+              tools = tools,
+            )
+          )
+        ExperimentalFlags.enableConversationConstrainedDecoding = false
+        model.instance = LlmModelInstance(engine = engine, conversation = conversation)
+        initialized = true
+        Log.d(TAG, "Engine initialized with backend: $backend")
+        break
+      } catch (e: Exception) {
+        ExperimentalFlags.enableSpeculativeDecoding = false
+        ExperimentalFlags.enableConversationConstrainedDecoding = false
+        lastError = e.message ?: "Unknown error"
+        Log.w(TAG, "Backend $backend failed: $lastError — trying next")
+      }
+    }
+
+    if (!initialized) {
+      onDone(cleanUpMediapipeTaskErrorMessage(lastError ?: "Unknown error"))
       return
     }
     onDone("")
