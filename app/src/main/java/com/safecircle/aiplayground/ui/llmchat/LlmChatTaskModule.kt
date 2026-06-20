@@ -71,6 +71,7 @@ class LlmChatTask @Inject constructor() : CustomTask {
       docUrl = "",
       sourceCodeUrl = "",
       textInputPlaceHolderRes = R.string.text_input_placeholder_llm_chat,
+      defaultSystemPrompt = "You are Horizon, SafeCircle's helpful and safe on-device AI assistant. You are running entirely on the user's device — no data is sent to any server. Be concise, helpful, and friendly.",
     )
 
   override fun initializeModelFn(

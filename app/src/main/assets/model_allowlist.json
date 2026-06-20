@@ -15,7 +15,7 @@
         "topP": 0.95,
         "temperature": 1.0,
         "maxTokens": 1024,
-        "accelerators": "cpu,gpu,npu"
+        "accelerators": "gpu,cpu,npu"
       },
       "taskTypes": ["llm_chat", "llm_prompt_lab", "safety_detection"]
     },
@@ -34,7 +34,7 @@
         "topP": 0.95,
         "temperature": 1.0,
         "maxTokens": 1024,
-        "accelerators": "cpu,gpu,npu"
+        "accelerators": "gpu,cpu,npu"
       },
       "taskTypes": ["llm_chat", "llm_prompt_lab", "safety_detection"]
     },
@@ -54,7 +54,7 @@
         "topP": 0.95,
         "temperature": 1.0,
         "maxTokens": 1024,
-        "accelerators": "cpu,gpu,npu"
+        "accelerators": "gpu,cpu,npu"
       },
       "taskTypes": ["llm_chat", "llm_prompt_lab", "safety_detection"]
     },
@@ -74,7 +74,7 @@
         "topP": 0.95,
         "temperature": 1.0,
         "maxTokens": 1024,
-        "accelerators": "cpu,gpu,npu"
+        "accelerators": "gpu,cpu,npu"
       },
       "taskTypes": ["llm_chat", "llm_prompt_lab", "safety_detection"]
     }
