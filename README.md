@@ -1,6 +1,6 @@
 <div align="center">
 
-<img src="app/src/main/res/drawable/logo.xml" width="120" alt="SafeCircle AI Playground icon" />
+<img src="docs/icon.svg" width="120" alt="SafeCircle AI Playground icon" />
 
 # SafeCircle AI Playground
 
