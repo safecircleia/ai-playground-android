@@ -21,9 +21,6 @@
 ## Overview
 
 SafeCircle AI Playground is an Android application for exploring, benchmarking, and interacting with on-device AI models powered by [Google AI Edge](https://ai.google.dev/edge). All inference runs locally — your data never leaves the device.
-
-Built on top of the [Google AI Edge Gallery](https://github.com/google-ai-edge/gallery) open-source project, this fork adds SafeCircle branding, a Material You–compliant UI, and an AMOLED-first dark theme.
-
 ---
 
 ## Features
