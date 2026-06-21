@@ -4,79 +4,116 @@
       "name": "Horizon Mobile INT4",
       "modelId": "safecircleai/horizon-mobile",
       "modelFile": "horizon-mobile-int4_q4_block128_ekv1280.litertlm",
-      "commitHash": "1.0",
-      "url": "https://models.safecircle.tech/models/horizon-mobile-int4_q4_block128_ekv1280.litertlm",
-      "description": "Horizon Mobile (INT4) is SafeCircle's fastest on-device model. 4-bit quantization keeps it under 600 MB while delivering sub-100ms inference on everyday hardware. Runs on CPU. Best for real-time safety detection and chat.",
+      "commitHash": "1.1.0",
+      "url": "https://models.safecircle.tech/models/horizon-mobile/v1.1.0/horizon-mobile-int4_q4_block128_ekv1280.litertlm",
+      "description": "Horizon Mobile (INT4) is SafeCircle's fastest on-device safety detection model. Fine-tuned from Gemma 3 1B with 4-bit quantization, keeping it under 600 MB for real-time child safety risk analysis on everyday hardware.",
       "sizeInBytes": 556793856,
-      "version": "1.0",
+      "version": "1.1.0",
       "section": "Horizon",
       "defaultConfig": {
-        "topK": 40,
+        "topK": 1,
         "topP": 0.95,
-        "temperature": 1.0,
-        "maxTokens": 1024,
+        "temperature": 0.1,
+        "maxTokens": 256,
         "accelerators": "gpu,cpu,npu"
       },
-      "taskTypes": ["llm_chat", "llm_prompt_lab", "safety_detection"]
+      "taskTypes": ["safety_detection"]
     },
     {
       "name": "Horizon Mobile INT8",
       "modelId": "safecircleai/horizon-mobile",
       "modelFile": "horizon-mobile-int8_q8_ekv1280.litertlm",
-      "commitHash": "1.0",
-      "url": "https://models.safecircle.tech/models/horizon-mobile-int8_q8_ekv1280.litertlm",
-      "description": "Horizon Mobile (INT8) is SafeCircle's highest-quality on-device model. 8-bit quantization preserves more of the original model accuracy, making it ideal for nuanced safety analysis and longer conversations. Runs on CPU.",
+      "commitHash": "1.1.0",
+      "url": "https://models.safecircle.tech/models/horizon-mobile/v1.1.0/horizon-mobile-int8_q8_ekv1280.litertlm",
+      "description": "Horizon Mobile (INT8) is SafeCircle's highest-accuracy on-device safety detection model. Fine-tuned from Gemma 3 1B with 8-bit quantization for more precise risk analysis — ideal for nuanced grooming, bullying, and threat detection.",
       "sizeInBytes": 1148903834,
-      "version": "1.0",
+      "version": "1.1.0",
       "section": "Horizon",
       "defaultConfig": {
-        "topK": 40,
+        "topK": 1,
         "topP": 0.95,
-        "temperature": 1.0,
-        "maxTokens": 1024,
+        "temperature": 0.1,
+        "maxTokens": 256,
         "accelerators": "gpu,cpu,npu"
       },
-      "taskTypes": ["llm_chat", "llm_prompt_lab", "safety_detection"]
+      "taskTypes": ["safety_detection"]
     },
     {
       "name": "Horizon Edge E2B",
-      "modelId": "safecircleai/horizon-edge",
+      "modelId": "safecircleai/horizon-edge-2b",
       "modelFile": "horizon-edge-e2b.litertlm",
-      "commitHash": "1.0",
-      "url": "https://models.safecircle.tech/models/horizon-edge-e2b.litertlm",
-      "description": "Horizon Edge (E2B) is built on Gemma 4 2B Edge, optimised for devices with 6 GB+ RAM. Larger context window and improved reasoning over Horizon Mobile, while staying fully on-device.",
-      "sizeInBytes": 0,
-      "version": "1.0",
+      "commitHash": "1.0.0",
+      "url": "https://models.safecircle.tech/models/horizon-edge-2b/v1.0.0/horizon-edge-e2b.litertlm",
+      "description": "Horizon Edge (E2B) is a safety detection model fine-tuned from Gemma 4 E2B. Larger context window and improved reasoning over Horizon Mobile, designed for devices with 6 GB+ RAM.",
+      "sizeInBytes": 5443461120,
+      "version": "1.0.0",
       "section": "Horizon Edge",
-      "disabled": true,
       "defaultConfig": {
         "topK": 40,
         "topP": 0.95,
-        "temperature": 1.0,
+        "temperature": 0.7,
         "maxTokens": 1024,
         "accelerators": "gpu,cpu,npu"
       },
-      "taskTypes": ["llm_chat", "llm_prompt_lab", "safety_detection"]
+      "taskTypes": ["safety_detection", "llm_chat", "llm_prompt_lab", "llm_agent_chat"]
+    },
+    {
+      "name": "Horizon Edge E2B (Tensor G5)",
+      "modelId": "safecircleai/horizon-edge-2b",
+      "modelFile": "horizon-edge-e2b_Google_Tensor_G5.litertlm",
+      "commitHash": "1.0.0",
+      "url": "https://models.safecircle.tech/models/horizon-edge-2b/v1.0.0/horizon-edge-e2b_Google_Tensor_G5.litertlm",
+      "description": "Horizon Edge E2B optimized for Google Tensor G5 (Pixel 10). Hardware-specific compilation for best performance on Tensor devices.",
+      "sizeInBytes": 5443461120,
+      "version": "1.0.0",
+      "section": "Horizon Edge",
+      "defaultConfig": {
+        "topK": 40,
+        "topP": 0.95,
+        "temperature": 0.7,
+        "maxTokens": 1024,
+        "accelerators": "gpu,cpu,npu"
+      },
+      "taskTypes": ["safety_detection", "llm_chat", "llm_prompt_lab", "llm_agent_chat"]
+    },
+    {
+      "name": "Horizon Edge E2B (Snapdragon)",
+      "modelId": "safecircleai/horizon-edge-2b",
+      "modelFile": "horizon-edge-e2b_qualcomm_qcs8275.litertlm",
+      "commitHash": "1.0.0",
+      "url": "https://models.safecircle.tech/models/horizon-edge-2b/v1.0.0/horizon-edge-e2b_qualcomm_qcs8275.litertlm",
+      "description": "Horizon Edge E2B optimized for Qualcomm QCS8275 (Snapdragon 8 Gen series). Hardware-specific compilation for best performance on Snapdragon devices.",
+      "sizeInBytes": 5443461120,
+      "version": "1.0.0",
+      "section": "Horizon Edge",
+      "defaultConfig": {
+        "topK": 40,
+        "topP": 0.95,
+        "temperature": 0.7,
+        "maxTokens": 1024,
+        "accelerators": "gpu,cpu,npu"
+      },
+      "taskTypes": ["safety_detection", "llm_chat", "llm_prompt_lab", "llm_agent_chat"]
     },
     {
       "name": "Horizon Edge E4B",
-      "modelId": "safecircleai/horizon-edge",
+      "modelId": "safecircleai/horizon-edge-4b",
       "modelFile": "horizon-edge-e4b.litertlm",
-      "commitHash": "1.0",
-      "url": "https://models.safecircle.tech/models/horizon-edge-e4b.litertlm",
-      "description": "Horizon Edge (E4B) is built on Gemma 4 4B Edge, delivering near server-quality safety analysis entirely on-device. Best for flagship phones with 8 GB+ RAM.",
+      "commitHash": "1.0.0",
+      "url": "https://models.safecircle.tech/models/horizon-edge-4b/v1.0.0/horizon-edge-e4b.litertlm",
+      "description": "Horizon Edge (E4B) is SafeCircle's most capable on-device safety detection model, fine-tuned from Gemma 4 E4B. Delivers near server-quality risk analysis entirely on-device. Best for flagship phones with 8 GB+ RAM.",
       "sizeInBytes": 0,
-      "version": "1.0",
+      "version": "1.0.0",
       "section": "Horizon Edge",
       "disabled": true,
       "defaultConfig": {
         "topK": 40,
         "topP": 0.95,
-        "temperature": 1.0,
+        "temperature": 0.7,
         "maxTokens": 1024,
         "accelerators": "gpu,cpu,npu"
       },
-      "taskTypes": ["llm_chat", "llm_prompt_lab", "safety_detection"]
+      "taskTypes": ["safety_detection", "llm_chat", "llm_prompt_lab", "llm_agent_chat"]
     }
   ]
 }

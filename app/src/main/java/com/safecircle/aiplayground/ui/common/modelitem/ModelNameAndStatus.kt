@@ -154,6 +154,25 @@ fun ModelNameAndStatus(
       modifier = Modifier.padding(end = 64.dp),
     )
 
+    // Version label: show local version, and remote if update available.
+    if (model.version.isNotEmpty()) {
+      val isDownloaded = downloadStatus?.status == ModelDownloadStatusType.SUCCEEDED
+      val versionText = if (model.updatable && model.latestModelFile != null) {
+        "v${model.version} → v${model.latestModelFile!!.commitHash} available"
+      } else if (isDownloaded) {
+        "v${model.version}"
+      } else {
+        "v${model.version}"
+      }
+      Text(
+        versionText,
+        style = MaterialTheme.typography.labelSmall,
+        color = if (model.updatable) MaterialTheme.colorScheme.primary
+                else MaterialTheme.colorScheme.onSurfaceVariant,
+        modifier = Modifier.padding(top = 2.dp).alpha(0.7f),
+      )
+    }
+
     // Status icon + size + download progress details.
     if (model.runtimeType != RuntimeType.AICORE && showModelSizeAndDownloadProgressLabel) {
       ModelStatusDetails(

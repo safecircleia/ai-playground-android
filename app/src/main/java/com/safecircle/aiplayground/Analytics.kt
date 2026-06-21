@@ -68,6 +68,7 @@ enum class GalleryEvent(val id: String) {
   GENERATE_ACTION(id = "playground_generate_action"),
   BUTTON_CLICKED(id = "playground_button_clicked"),
   SAFETY_SCAN(id = "playground_safety_scan"),
+  SAFETY_FEEDBACK(id = "playground_safety_feedback"),
   CHAT_MESSAGE(id = "playground_chat_message"),
   BENCHMARK_RUN(id = "playground_benchmark_run"),
   CHAT_HISTORY(id = "playground_chat_history"),

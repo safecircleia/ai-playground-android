@@ -361,7 +361,9 @@ fun GalleryTheme(content: @Composable () -> Unit) {
       surfaceContainerHigh = Color(0xFF1A1A1A),
       surfaceContainerHighest = Color(0xFF222222),
       surfaceBright = Color(0xFF111111),
-      surfaceVariant = Color(0xFF0A0A0A),
+      surfaceVariant = Color(0xFF1A1A1A),
+      onSurface = baseScheme.onSurface,
+      onSurfaceVariant = baseScheme.onSurfaceVariant,
     ) else baseScheme
 
   val customColorsPalette = if (darkTheme) darkCustomColors else lightCustomColors

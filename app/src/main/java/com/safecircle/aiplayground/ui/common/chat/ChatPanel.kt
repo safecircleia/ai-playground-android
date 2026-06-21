@@ -59,10 +59,14 @@ import androidx.compose.material.icons.outlined.ThumbUp
 import androidx.compose.material.icons.outlined.Timer
 import androidx.compose.material.icons.rounded.ContentCopy
 import androidx.compose.material.icons.rounded.Refresh
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
@@ -541,7 +545,7 @@ fun ChatPanel(
                   if (message.side == ChatSide.AGENT) {
                     Row(
                       verticalAlignment = Alignment.CenterVertically,
-                      horizontalArrangement = Arrangement.spacedBy(8.dp),
+                      horizontalArrangement = Arrangement.spacedBy(4.dp),
                     ) {
                       LatencyText(message = message)
                       if (message is ChatMessageText && !uiState.inProgress) {
@@ -554,6 +558,36 @@ fun ChatPanel(
                             contentDescription = stringResource(R.string.copy),
                             tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
                             modifier = Modifier.size(18.dp),
+                          )
+                        }
+                        IconButton(
+                          onClick = {
+                            isPositiveFeedback = true
+                            feedbackMessageIndex = index
+                            showFeedbackDialog = true
+                          },
+                          modifier = Modifier.size(28.dp),
+                        ) {
+                          Icon(
+                            imageVector = if (feedbackMessageIndex == index && isPositiveFeedback) Icons.Filled.ThumbUp else Icons.Outlined.ThumbUp,
+                            contentDescription = "Good response",
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
+                            modifier = Modifier.size(16.dp),
+                          )
+                        }
+                        IconButton(
+                          onClick = {
+                            isPositiveFeedback = false
+                            feedbackMessageIndex = index
+                            showFeedbackDialog = true
+                          },
+                          modifier = Modifier.size(28.dp),
+                        ) {
+                          Icon(
+                            imageVector = if (feedbackMessageIndex == index && !isPositiveFeedback) Icons.Filled.ThumbDown else Icons.Outlined.ThumbDown,
+                            contentDescription = "Bad response",
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
+                            modifier = Modifier.size(16.dp),
                           )
                         }
                       }
@@ -739,6 +773,100 @@ fun ChatPanel(
       },
     )
   }
+
+  // Feedback dialog.
+  if (showFeedbackDialog) {
+    ChatFeedbackDialog(
+      isPositive = isPositiveFeedback,
+      onDismiss = { showFeedbackDialog = false },
+      onSubmit = { comment ->
+        val msg = messages.getOrNull(feedbackMessageIndex)
+        val userMsg = if (feedbackMessageIndex > 0) messages.getOrNull(feedbackMessageIndex - 1) else null
+        showFeedbackDialog = false
+
+        scope.launch {
+          runCatching {
+            val payload = org.json.JSONObject().apply {
+              put("sentiment", if (isPositiveFeedback) "positive" else "negative")
+              put("comment", comment)
+              put("chat_type", task.id)
+              put("model_id", selectedModel.name)
+              put("model_version", selectedModel.version)
+              put("conversation", org.json.JSONArray().apply {
+                userMsg?.let { u ->
+                  if (u is ChatMessageText) put(org.json.JSONObject().apply {
+                    put("sender", "USER")
+                    put("text", u.content)
+                  })
+                }
+              })
+              put("model_response", (msg as? ChatMessageText)?.content ?: "")
+              put("parsed_risk_level", "")
+              put("parsed_categories", org.json.JSONArray())
+              put("parsed_confidence", 0.0)
+            }
+            kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
+              val url = java.net.URL("https://api.safecircle.tech/api/model-feedback")
+              val conn = (url.openConnection() as java.net.HttpURLConnection).apply {
+                requestMethod = "POST"
+                setRequestProperty("Content-Type", "application/json")
+                doOutput = true
+                outputStream.write(payload.toString().toByteArray())
+              }
+              Log.d("ChatFeedback", "Feedback POST: ${conn.responseCode}")
+              conn.disconnect()
+            }
+          }.onFailure { e -> Log.w("ChatFeedback", "Failed to submit feedback", e) }
+        }
+      },
+    )
+  }
+}
+
+@Composable
+private fun ChatFeedbackDialog(
+  isPositive: Boolean,
+  onDismiss: () -> Unit,
+  onSubmit: (String) -> Unit,
+) {
+  var comment by remember { mutableStateOf("") }
+
+  AlertDialog(
+    onDismissRequest = onDismiss,
+    shape = RoundedCornerShape(8.dp),
+    title = {
+      Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        Icon(
+          if (isPositive) Icons.Filled.ThumbUp else Icons.Filled.ThumbDown,
+          contentDescription = null,
+          modifier = Modifier.size(20.dp),
+        )
+        Text(if (isPositive) "Good response" else "Bad response")
+      }
+    },
+    text = {
+      Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+        OutlinedTextField(
+          value = comment,
+          onValueChange = { comment = it },
+          modifier = Modifier.fillMaxWidth(),
+          placeholder = { Text("What could be improved?") },
+          maxLines = 3,
+        )
+        Text(
+          "Anonymous — helps improve model responses.",
+          style = MaterialTheme.typography.labelSmall,
+          color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
+        )
+      }
+    },
+    confirmButton = {
+      Button(onClick = { onSubmit(comment) }) { Text("Submit") }
+    },
+    dismissButton = {
+      TextButton(onClick = onDismiss) { Text("Cancel") }
+    },
+  )
 }
 
 private suspend fun scrollToBottom(

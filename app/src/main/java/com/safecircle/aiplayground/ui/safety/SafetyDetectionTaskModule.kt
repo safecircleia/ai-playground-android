@@ -66,7 +66,7 @@ class SafetyDetectionTask @Inject constructor() : CustomTask {
       supportAudio = false,
       onDone = onDone,
       coroutineScope = coroutineScope,
-      systemInstruction = Contents.of(SAFETY_SYSTEM_PROMPT),
+      systemInstruction = null,
     )
   }
 

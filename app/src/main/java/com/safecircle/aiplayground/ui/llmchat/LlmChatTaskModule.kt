@@ -146,13 +146,92 @@ class LlmChatTask @Inject constructor() : CustomTask {
   }
 }
 
+////////////////////////////////////////////////////////////////////////////////////////////////////
+// Agent Chat.
+
+class LlmAgentChatTask @Inject constructor() : CustomTask {
+  override val task: Task =
+    Task(
+      id = BuiltInTaskId.LLM_AGENT_CHAT,
+      label = "Agent Chat",
+      category = Category.LLM,
+      icon = Icons.Outlined.Forum,
+      models = mutableListOf(),
+      description = "Have Horizon complete agentic tasks for you — entirely on-device.",
+      shortDescription = "Agentic tasks on-device",
+      docUrl = "",
+      sourceCodeUrl = "",
+      textInputPlaceHolderRes = R.string.text_input_placeholder_llm_chat,
+      defaultSystemPrompt = "You are Horizon, SafeCircle's helpful on-device AI agent. You can help users with tasks step by step. Be concise and action-oriented.",
+    )
+
+  override fun initializeModelFn(
+    context: Context,
+    coroutineScope: CoroutineScope,
+    model: Model,
+    systemInstruction: Contents?,
+    onDone: (String) -> Unit,
+  ) {
+    model.runtimeHelper.initialize(
+      context = context,
+      model = model,
+      taskId = task.id,
+      supportImage = false,
+      supportAudio = false,
+      onDone = onDone,
+      coroutineScope = coroutineScope,
+      systemInstruction = systemInstruction,
+    )
+  }
+
+  override fun cleanUpModelFn(
+    context: Context,
+    coroutineScope: CoroutineScope,
+    model: Model,
+    onDone: () -> Unit,
+  ) {
+    model.runtimeHelper.cleanUp(model = model, onDone = onDone)
+  }
+
+  @Composable
+  override fun MainScreen(data: Any) {
+    val myData = data as CustomTaskDataForBuiltinTask
+    val viewModel: LlmChatViewModel = hiltViewModel()
+    LaunchedEffect(task) { viewModel.loadSystemPrompt(task) }
+    val uiSystemPrompt by viewModel.uiSystemPrompt.collectAsState()
+    val systemPromptUpdatedMessage = stringResource(R.string.system_prompt_updated)
+    LlmChatScreen(
+      modelManagerViewModel = myData.modelManagerViewModel,
+      navigateUp = myData.onNavUp,
+      viewModel = viewModel,
+      allowEditingSystemPrompt = true,
+      curSystemPrompt = uiSystemPrompt,
+      onSystemPromptChanged = { newPrompt ->
+        val selectedModel = myData.modelManagerViewModel.uiState.value.selectedModel
+        viewModel.applySystemPromptChange(
+          task = task,
+          model = selectedModel,
+          newPrompt = newPrompt,
+          systemPromptUpdatedMessage = systemPromptUpdatedMessage,
+        )
+      },
+    )
+  }
+}
+
 @Module
-@InstallIn(SingletonComponent::class) // Or another component that fits your scope
+@InstallIn(SingletonComponent::class)
 internal object LlmChatTaskModule {
   @Provides
   @IntoSet
   fun provideTask(): CustomTask {
     return LlmChatTask()
+  }
+
+  @Provides
+  @IntoSet
+  fun provideAgentChatTask(): CustomTask {
+    return LlmAgentChatTask()
   }
 }
 

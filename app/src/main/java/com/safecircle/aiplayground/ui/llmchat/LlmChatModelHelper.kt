@@ -165,6 +165,7 @@ object LlmChatModelHelper : LlmModelHelper {
             ConversationConfig(
               systemInstruction = systemInstruction,
               tools = tools,
+              samplerConfig = SamplerConfig(topK, topP.toDouble(), temperature.toDouble(), 0),
             )
           )
         ExperimentalFlags.enableConversationConstrainedDecoding = false
@@ -225,6 +226,7 @@ object LlmChatModelHelper : LlmModelHelper {
             systemInstruction = systemInstruction,
             tools = tools,
             initialMessages = initialMessages,
+            samplerConfig = SamplerConfig(topK, topP.toDouble(), temperature.toDouble(), 0),
           )
         )
       ExperimentalFlags.enableConversationConstrainedDecoding = false
