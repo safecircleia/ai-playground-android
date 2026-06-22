@@ -18,6 +18,18 @@
 
 ---
 
+## Screenshots
+
+<div align="center">
+  <img src="ss/exported/1080x1920/en/01-hero.png" width="18%" alt="Home" />
+  <img src="ss/exported/1080x1920/en/02-device-bottom.png" width="18%" alt="Safety Detection" />
+  <img src="ss/exported/1080x1920/en/03-device-top.png" width="18%" alt="Horizon AI" />
+  <img src="ss/exported/1080x1920/en/04-device-bottom.png" width="18%" alt="Models" />
+  <img src="ss/exported/1080x1920/en/05-no-device.png" width="18%" alt="Features" />
+</div>
+
+---
+
 ## Overview
 
 SafeCircle AI Playground is an Android application for exploring, benchmarking, and interacting with on-device AI models powered by [Google AI Edge](https://ai.google.dev/edge). All inference runs locally — your data never leaves the device.

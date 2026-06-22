@@ -1,0 +1,229 @@
+{
+  "schemaVersion": 2,
+  "appName": "SafeCircle AI Playground",
+  "themeId": "clean-light",
+  "connectedCanvas": true,
+  "locales": [
+    "en"
+  ],
+  "locale": "en",
+  "device": "android",
+  "orientation": "portrait",
+  "appIcon": "/app-icon.png",
+  "slidesByDevice": {
+    "iphone": [
+      {
+        "id": "sc_iphone_1",
+        "layout": "hero",
+        "label": {
+          "en": "SAFECIRCLE"
+        },
+        "headline": {
+          "en": "On-device AI.\nNothing leaves\nyour phone."
+        },
+        "screenshot": "/screenshots/apple/iphone/en/01.png",
+        "transforms": {
+          "device": {
+            "x": -450.80914890045335,
+            "y": 955.2104098119215,
+            "width": 977,
+            "height": 1991,
+            "rotation": 0,
+            "zIndex": 3
+          }
+        }
+      },
+      {
+        "id": "sc_iphone_2",
+        "layout": "device-bottom",
+        "label": {
+          "en": "SAFETY DETECTION"
+        },
+        "headline": {
+          "en": "Spot grooming\nand bullying\nin real time."
+        },
+        "screenshot": "/screenshots/apple/iphone/en/03.png"
+      },
+      {
+        "id": "sc_iphone_3",
+        "layout": "device-top",
+        "label": {
+          "en": "HORIZON AI"
+        },
+        "headline": {
+          "en": "Risk analysis\nthat never\nphones home."
+        },
+        "screenshot": "/screenshots/apple/iphone/en/04.png",
+        "inverted": true
+      },
+      {
+        "id": "sc_iphone_4",
+        "layout": "device-bottom",
+        "label": {
+          "en": "MODELS"
+        },
+        "headline": {
+          "en": "Choose your\nmodel. GPU, CPU,\nor NPU."
+        },
+        "screenshot": "/screenshots/apple/iphone/en/02.png"
+      },
+      {
+        "id": "sc_iphone_5",
+        "layout": "no-device",
+        "label": {
+          "en": "EVERYTHING"
+        },
+        "headline": {
+          "en": "Agent Chat\nLLM Chat\nPrompt Lab\nBenchmark"
+        },
+        "screenshot": ""
+      }
+    ],
+    "android": [
+      {
+        "id": "sc_android_1",
+        "layout": "hero",
+        "label": {
+          "en": "SAFECIRCLE"
+        },
+        "headline": {
+          "en": "On-device AI.\nNothing leaves\nyour phone."
+        },
+        "screenshot": "/screenshots/android/phone/en/01.png",
+        "transforms": {
+          "device": {
+            "x": 221.0133038940457,
+            "y": 677.042167580437,
+            "width": 678.5844380403457,
+            "height": 1470.266282420749,
+            "rotation": 0,
+            "zIndex": 3
+          }
+        }
+      },
+      {
+        "id": "sc_android_2",
+        "layout": "device-bottom",
+        "label": {
+          "en": "SAFETY DETECTION"
+        },
+        "headline": {
+          "en": "Spot grooming\nand bullying\nin real time."
+        },
+        "screenshot": "/screenshots/android/phone/en/03.png",
+        "transforms": {
+          "device": {
+            "x": 191.68310412906385,
+            "y": 659.512330975256,
+            "width": 678.5844380403457,
+            "height": 1470.266282420749,
+            "rotation": 0,
+            "zIndex": 3
+          }
+        }
+      },
+      {
+        "id": "sc_android_3",
+        "layout": "device-top",
+        "label": {
+          "en": "HORIZON AI"
+        },
+        "headline": {
+          "en": "Risk analysis\nthat never\nphones home."
+        },
+        "screenshot": "/screenshots/android/phone/en/04.png",
+        "inverted": true
+      },
+      {
+        "id": "sc_android_4",
+        "layout": "device-bottom",
+        "label": {
+          "en": "MODELS"
+        },
+        "headline": {
+          "en": "Choose your\nmodel. GPU, CPU,\nor NPU."
+        },
+        "screenshot": "/screenshots/android/phone/en/02.png",
+        "transforms": {
+          "device": {
+            "x": 191.68310412906385,
+            "y": 659.512330975256,
+            "width": 678.5844380403457,
+            "height": 1470.266282420749,
+            "rotation": 0,
+            "zIndex": 3
+          }
+        }
+      },
+      {
+        "id": "sc_android_5",
+        "layout": "no-device",
+        "label": {
+          "en": "EVERYTHING"
+        },
+        "headline": {
+          "en": "Agent Chat\nLLM Chat\nPrompt Lab\nBenchmark"
+        },
+        "screenshot": ""
+      }
+    ],
+    "ipad": [
+      {
+        "id": "sc_ipad_1",
+        "layout": "hero",
+        "label": {
+          "en": "SAFECIRCLE"
+        },
+        "headline": {
+          "en": "On-device AI.\nNothing leaves\nyour phone."
+        },
+        "screenshot": ""
+      }
+    ],
+    "android-7": [
+      {
+        "id": "sc_a7_1",
+        "layout": "hero",
+        "label": {
+          "en": "SAFECIRCLE"
+        },
+        "headline": {
+          "en": "On-device AI.\nNothing leaves\nyour phone."
+        },
+        "screenshot": ""
+      }
+    ],
+    "android-10": [
+      {
+        "id": "sc_a10_1",
+        "layout": "hero",
+        "label": {
+          "en": "SAFECIRCLE"
+        },
+        "headline": {
+          "en": "On-device AI.\nNothing leaves\nyour phone."
+        },
+        "screenshot": ""
+      }
+    ],
+    "feature-graphic": [
+      {
+        "id": "sc_fg_1",
+        "layout": "feature-graphic",
+        "label": {},
+        "headline": {
+          "en": "On-device AI for a safer digital world."
+        },
+        "screenshot": ""
+      }
+    ]
+  },
+  "crossScreenMockupsByDevice": {
+    "iphone": [],
+    "ipad": [],
+    "android": [],
+    "android-7": [],
+    "android-10": [],
+    "feature-graphic": []
+  }
+}
