@@ -41,6 +41,7 @@ import androidx.compose.material3.SegmentedButtonDefaults
 import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -54,8 +55,10 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
+import androidx.compose.material3.Switch
 import com.safecircle.aiplayground.BuildConfig
 import com.safecircle.aiplayground.R
+import com.safecircle.aiplayground.data.DebugSettings
 import com.safecircle.aiplayground.proto.Theme
 import com.safecircle.aiplayground.ui.common.ClickableLink
 import com.safecircle.aiplayground.ui.common.tos.AppTosDialog
@@ -75,6 +78,8 @@ fun SettingsDialog(
   var selectedTheme by remember { mutableStateOf(curThemeOverride) }
   val interactionSource = remember { MutableInteractionSource() }
   var showTos by remember { mutableStateOf(false) }
+  val context = LocalContext.current
+  val showRawOutput by DebugSettings.showRawOutput.collectAsState()
 
   Dialog(onDismissRequest = onDismissed) {
     val focusManager = LocalFocusManager.current
@@ -112,7 +117,6 @@ fun SettingsDialog(
           modifier = Modifier.verticalScroll(rememberScrollState()).weight(1f, fill = false),
           verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
-          val context = LocalContext.current
           // Theme switcher.
           Column(modifier = Modifier.fillMaxWidth().semantics(mergeDescendants = true) {}) {
             Text(
@@ -183,6 +187,34 @@ fun SettingsDialog(
               linkText = stringResource(R.string.tos_dialog_title_gemma),
               modifier = Modifier.padding(top = 4.dp),
             )
+          }
+
+          // Debug options — only visible in debug builds.
+          if (BuildConfig.DEBUG) {
+            Column(modifier = Modifier.fillMaxWidth().semantics(mergeDescendants = true) {}) {
+              Text(
+                "Developer",
+                style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Medium),
+              )
+              Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween,
+              ) {
+                Column(modifier = Modifier.weight(1f)) {
+                  Text("Show raw model output", style = MaterialTheme.typography.bodyMedium)
+                  Text(
+                    "Safety Detection: show full JSON response",
+                    style = labelSmallNarrow,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                  )
+                }
+                Switch(
+                  checked = showRawOutput,
+                  onCheckedChange = { DebugSettings.setShowRawOutput(context, it) },
+                )
+              }
+            }
           }
         }
 

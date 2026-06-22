@@ -106,7 +106,7 @@ data class AllowedModel(
         taskTypes.contains(BuiltInTaskId.LLM_TINY_GARDEN) ||
         taskTypes.contains(BuiltInTaskId.SAFETY_DETECTION)
     var configs: MutableList<Config> = mutableListOf()
-    var llmMaxToken = 1024
+    var llmMaxToken = DEFAULT_MAX_TOKEN
     var llmMaxContextLength: Int? = null
     var accelerators: List<Accelerator> = DEFAULT_ACCELERATORS
     var visionAccelerator: Accelerator = DEFAULT_VISION_ACCELERATOR
@@ -123,7 +123,7 @@ data class AllowedModel(
       val defaultTopK: Int = defaultConfig.topK ?: DEFAULT_TOPK
       val defaultTopP: Float = defaultConfig.topP ?: DEFAULT_TOPP
       val defaultTemperature: Float = defaultConfig.temperature ?: DEFAULT_TEMPERATURE
-      llmMaxToken = defaultConfig.maxTokens ?: 1024
+      llmMaxToken = defaultConfig.maxTokens ?: DEFAULT_MAX_TOKEN
       llmMaxContextLength = defaultConfig.maxContextLength
       if (acceleratorsStr != null) {
         val items = acceleratorsStr.split(",")

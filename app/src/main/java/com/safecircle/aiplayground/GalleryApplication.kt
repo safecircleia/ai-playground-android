@@ -17,7 +17,9 @@
 package com.safecircle.aiplayground
 
 import android.app.Application
+import com.safecircle.aiplayground.BuildConfig
 import com.safecircle.aiplayground.data.DataStoreRepository
+import com.safecircle.aiplayground.data.DebugSettings
 import com.safecircle.aiplayground.notifications.NotificationScheduleManager
 import com.safecircle.aiplayground.ui.theme.ThemeSettings
 import dagger.hilt.android.HiltAndroidApp
@@ -37,5 +39,8 @@ class GalleryApplication : Application() {
 
     // Load saved theme.
     ThemeSettings.themeOverride.value = dataStoreRepository.readTheme()
+
+    // Load debug settings (only meaningful in debug builds).
+    if (BuildConfig.DEBUG) DebugSettings.init(this)
   }
 }

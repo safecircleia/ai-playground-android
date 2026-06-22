@@ -234,27 +234,37 @@ constructor(
             else -> Backend.CPU()
           }
         val modelPath = model.getPath(context = appContext)
+        var benchmarkError: String? = null
         for (i in 0 until runCount) {
           Log.d(TAG, "Start running #$i...")
-          val benchmarkInfo =
-            benchmark(
-              modelPath = modelPath,
-              backend = backend,
-              prefillTokens = prefillTokens,
-              decodeTokens = decodeTokens,
-              cacheDir = cacheDirPath,
-            )
-          Log.d(TAG, "Done #$i")
+          try {
+            val benchmarkInfo =
+              benchmark(
+                modelPath = modelPath,
+                backend = backend,
+                prefillTokens = prefillTokens,
+                decodeTokens = decodeTokens,
+                cacheDir = cacheDirPath,
+              )
+            Log.d(TAG, "Done #$i")
 
-          val initTimeMs = benchmarkInfo.initTimeInSecond * 1000.0
-          if (i == 0) {
-            firstInitTime = initTimeMs
-          } else {
-            nonFirstInitTimes.add(initTimeMs)
+            val initTimeMs = benchmarkInfo.initTimeInSecond * 1000.0
+            if (i == 0) {
+              firstInitTime = initTimeMs
+            } else {
+              nonFirstInitTimes.add(initTimeMs)
+            }
+            prefillSpeeds.add(benchmarkInfo.lastPrefillTokensPerSecond)
+            decodeSpeeds.add(benchmarkInfo.lastDecodeTokensPerSecond)
+            timesToFirstToken.add(benchmarkInfo.timeToFirstTokenInSecond)
+          } catch (e: Exception) {
+            Log.e(TAG, "Benchmark run #$i failed", e)
+            benchmarkError = e.message ?: "Benchmark failed"
+            prefillSpeeds.add(0.0)
+            decodeSpeeds.add(0.0)
+            timesToFirstToken.add(0.0)
+            if (i > 0) nonFirstInitTimes.add(0.0)
           }
-          prefillSpeeds.add(benchmarkInfo.lastPrefillTokensPerSecond)
-          decodeSpeeds.add(benchmarkInfo.lastDecodeTokensPerSecond)
-          timesToFirstToken.add(benchmarkInfo.timeToFirstTokenInSecond)
 
           // Mark finish for this run.
           setRunProgress(completedRunCount = i + 1)
@@ -263,6 +273,9 @@ constructor(
         if (needCleanUpCacheDir) {
           benchmarkCacheDir.deleteRecursively()
           Log.d(TAG, "Cleaned up benchmark cache dir: ${benchmarkCacheDir.absolutePath}")
+        }
+        if (benchmarkError != null && prefillSpeeds.all { it == 0.0 }) {
+          Log.e(TAG, "All benchmark runs failed: $benchmarkError")
         }
       }
 

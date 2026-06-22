@@ -584,10 +584,7 @@ private fun AppTitle(enableAnimation: Boolean) {
       animationDurationMs = if (enableAnimation) TITLE_FIRST_LINE_ANIMATION_DURATION else 0,
     )
   }
-  // Second line text "Edge Gallery" and its animation.
-  //
-  // The initial animation is the same as the first line text. Right before it is done, the final
-  // text with a gradient is revealed.
+  // Second line text "AI Playground" — blue swipe in, onSurface swipe covers it, gradient reveals.
   Box(modifier = Modifier.clearAndSetSemantics {}) {
     var delay = TITLE_SECOND_LINE_ANIMATION_START
     if (enableAnimation) {
@@ -616,9 +613,10 @@ private fun AppTitle(enableAnimation: Boolean) {
         titleStyle.copy(
           brush = linearGradient(colors = MaterialTheme.customColors.appTitleGradientColors)
         ),
-      modifier = Modifier.offset(x = (-16).dp, y = (-16).dp),
+      modifier = Modifier.offset(y = (-16).dp),
       animationDelay = if (enableAnimation) delay else 0,
       animationDurationMs = if (enableAnimation) TITLE_SECOND_LINE_ANIMATION_DURATION2 else 0,
+      extraTextPadding = 0.dp,
     )
   }
 }

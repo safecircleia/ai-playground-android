@@ -136,7 +136,11 @@ object LlmChatModelHelper : LlmModelHelper {
           backend = backend,
           visionBackend = if (shouldEnableImage) visionBackend else null,
           audioBackend = if (shouldEnableAudio) Backend.CPU() else null,
-          cacheDir = context.cacheDir.absolutePath,
+          maxNumTokens = maxTokens,
+          cacheDir =
+            if (modelPath.startsWith("/data/local/tmp"))
+              context.getExternalFilesDir(null)?.absolutePath
+            else null,
         )
       Log.d(TAG, "Trying backend: $backend")
       try {
@@ -160,15 +164,28 @@ object LlmChatModelHelper : LlmModelHelper {
 
         ExperimentalFlags.enableConversationConstrainedDecoding =
           enableConversationConstrainedDecoding
+        if (enableConversationConstrainedDecoding) {
+          ExperimentalFlags.overwritePromptTemplate = LITERT_COMMUNITY_GEMMA4_CHAT_TEMPLATE
+        }
         val conversation =
           engine.createConversation(
             ConversationConfig(
+              samplerConfig =
+                if (backend is Backend.NPU) {
+                  null
+                } else {
+                  SamplerConfig(
+                    topK = topK,
+                    topP = topP.toDouble(),
+                    temperature = temperature.toDouble(),
+                  )
+                },
               systemInstruction = systemInstruction,
               tools = tools,
-              samplerConfig = SamplerConfig(topK, topP.toDouble(), temperature.toDouble(), 0),
             )
           )
         ExperimentalFlags.enableConversationConstrainedDecoding = false
+        ExperimentalFlags.overwritePromptTemplate = null
         model.instance = LlmModelInstance(engine = engine, conversation = conversation)
         initialized = true
         Log.d(TAG, "Engine initialized with backend: $backend")
@@ -220,16 +237,29 @@ object LlmChatModelHelper : LlmModelHelper {
         )
       ExperimentalFlags.enableConversationConstrainedDecoding =
         enableConversationConstrainedDecoding
+      if (enableConversationConstrainedDecoding) {
+        ExperimentalFlags.overwritePromptTemplate = LITERT_COMMUNITY_GEMMA4_CHAT_TEMPLATE
+      }
       val newConversation =
         engine.createConversation(
           ConversationConfig(
+            samplerConfig =
+              if (accelerator == Accelerator.NPU.label || accelerator == Accelerator.TPU.label) {
+                null
+              } else {
+                SamplerConfig(
+                  topK = topK,
+                  topP = topP.toDouble(),
+                  temperature = temperature.toDouble(),
+                )
+              },
             systemInstruction = systemInstruction,
             tools = tools,
             initialMessages = initialMessages,
-            samplerConfig = SamplerConfig(topK, topP.toDouble(), temperature.toDouble(), 0),
           )
         )
       ExperimentalFlags.enableConversationConstrainedDecoding = false
+      ExperimentalFlags.overwritePromptTemplate = null
       instance.conversation = newConversation
 
       Log.d(TAG, "Resetting done")
@@ -339,3 +369,103 @@ object LlmChatModelHelper : LlmModelHelper {
     return stream.toByteArray()
   }
 }
+
+// Chat template from litert-community/gemma-4-E2B-it-litert-lm, extracted from the LiteRT-LM SDK
+// native library. Used to override the model's baked-in template so constrained decoding works.
+private const val LITERT_COMMUNITY_GEMMA4_CHAT_TEMPLATE = """{%- set ns = namespace(prev_message_type=None) -%}
+{%- set loop_messages = messages -%}
+{%- if tools or messages[0]['role'] == 'system' -%}
+    {{- '<start_of_turn>developer\n' -}}
+    {%- if messages[0]['role'] == 'system' -%}
+        {%- if messages[0]['content'] is string -%}
+            {{- messages[0]['content'] | trim -}}
+        {%- else -%}
+            {%- for item in messages[0]['content'] -%}
+                {%- if item['type'] == 'text' -%}
+                    {{- item['text'] | trim -}}
+                {%- endif -%}
+            {%- endfor -%}
+        {%- endif -%}
+        {%- set loop_messages = messages[1:] -%}
+        {%- if tools -%}
+            {{- '\n\n' -}}
+        {%- endif -%}
+    {%- endif -%}
+    {%- for tool in tools %}
+        {{- '<start_function_declaration>' -}}
+        {{- tool | trim }}
+        {{- '<end_function_declaration>' -}}
+    {%- endfor %}
+    {{- '<end_of_turn>\n'}}
+{%- endif %}
+{%- for message in loop_messages -%}
+    {%- if (message['role'] == 'assistant') -%}
+        {%- set role = "model" -%}
+    {%- else -%}
+        {%- set role = message['role'] -%}
+    {%- endif -%}
+    {%- if role != 'tool' -%}
+        {%- if ns.prev_message_type != 'tool_response' -%}
+            {{- '<start_of_turn>' + role + '\n'}}
+        {%- endif -%}
+        {%- set ns.prev_message_type = None -%}
+        {%- if 'content' in message -%}
+            {%- if message['content'] is string -%}
+                {{ message['content'] | trim }}
+            {%- elif message['content'] is iterable -%}
+                {%- for item in message['content'] -%}
+                    {%- if item['type'] == 'text' -%}
+                        {{ item['text'] | trim }}
+                    {%- endif -%}
+                {%- endfor -%}
+            {%- endif -%}
+            {%- set ns.prev_message_type = 'content' -%}
+        {%- endif -%}
+        {%- if 'tool_calls' in message and message['tool_calls'] and message['tool_calls'] is iterable -%}
+            {%- for tool_call in message['tool_calls'] -%}
+                {%- if 'function' in tool_call -%}
+                    {%- set tool_call = tool_call['function'] -%}
+                {%- endif -%}
+                {{-  '<start_function_call>call:' + tool_call['name'] + '{' -}}
+                {%- if 'arguments' in tool_call -%}
+                    {%- for key in tool_call['arguments'] -%}
+                        {{- key + ':' + tool_call['arguments'][key] -}}
+                        {% if not loop.last %}
+                            {{- ',' -}}
+                        {% endif %}
+                    {%- endfor %}
+                {%- endif -%}
+                {{- '}' + '<end_function_call>' -}}
+            {%- endfor -%}
+            {%- if loop.last -%}
+                {{ '<start_function_response>' }}
+            {%- endif -%}
+            {%- set ns.prev_message_type = 'tool_call' -%}
+        {%- endif -%}
+    {%- else -%}
+        {%- if 'content' in message -%}
+            {%- if message['content'] is string -%}
+                {{- '<start_function_response>response:' -}}
+                {{ message['content'] | trim }}
+                {{- '<end_function_response>' -}}
+            {%- elif message['content'] is iterable -%}
+                {%- for item in message['content'] -%}
+                    {%- if item['type'] == 'text' -%}
+                        {{ '<start_function_response>response:' + item['text'] + '<end_function_response>' }}
+                    {%- endif -%}
+                {%- endfor -%}
+            {%- endif -%}
+        {%- endif -%}
+        {%- set ns.prev_message_type = 'tool_response' -%}
+    {%- endif -%}
+    {%- if ns.prev_message_type not in ['tool_call', 'tool_response'] -%}
+        {{ '<end_of_turn>\n' }}
+    {%- endif -%}
+{%- endfor -%}
+{%- if add_generation_prompt -%}
+    {%- if ns.prev_message_type == 'tool_call' -%}
+        {{- '<start_function_response>' -}}
+    {%- elif ns.prev_message_type != 'tool_response' -%}
+        {{- '<start_of_turn>model\n' -}}
+    {%- endif -%}
+{%- endif -%}"""

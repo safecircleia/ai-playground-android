@@ -1,0 +1,6 @@
+Initial release of SafeCircle AI Playground.
+
+• On-device safety detection with Horizon Mobile and Horizon Edge models
+• Agent Chat with 12 built-in skills and MCP tool support
+• LLM Chat and Prompt Lab for general-purpose conversation
+• All inference runs entirely on-device — no data leaves your phone

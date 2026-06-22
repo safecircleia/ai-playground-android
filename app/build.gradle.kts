@@ -46,11 +46,24 @@ android {
     testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
   }
 
+  signingConfigs {
+    create("release") {
+      val keystorePath = System.getenv("KEYSTORE_PATH")
+      if (keystorePath != null) {
+        storeFile = file(keystorePath)
+        storePassword = System.getenv("KEYSTORE_PASSWORD")
+        keyAlias = System.getenv("KEY_ALIAS")
+        keyPassword = System.getenv("KEY_PASSWORD")
+      }
+    }
+  }
+
   buildTypes {
     release {
       isMinifyEnabled = false
       proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
-      signingConfig = signingConfigs.getByName("debug")
+      val hasReleaseKeystore = System.getenv("KEYSTORE_PATH") != null
+      signingConfig = if (hasReleaseKeystore) signingConfigs.getByName("release") else signingConfigs.getByName("debug")
     }
   }
   compileOptions {
@@ -86,6 +99,7 @@ dependencies {
   implementation(libs.androidx.lifecycle.process)
   implementation(libs.androidx.security.crypto)
   implementation(libs.androidx.webkit)
+  implementation("androidx.documentfile:documentfile:1.0.1")
   implementation(libs.litertlm)
   implementation(libs.commonmark)
   implementation(libs.richtext)

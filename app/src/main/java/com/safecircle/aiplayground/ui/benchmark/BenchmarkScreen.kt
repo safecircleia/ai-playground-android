@@ -98,7 +98,9 @@ fun BenchmarkScreen(
   var selectedModelName by remember { mutableStateOf(initialModel.name) }
   var selectedModel by
     remember(selectedModelName) {
-      mutableStateOf(modelManagerViewModel.getModelByName(name = selectedModelName)!!)
+      mutableStateOf(
+        modelManagerViewModel.getModelByName(name = selectedModelName) ?: initialModel
+      )
     }
   val filteredResults = remember { mutableStateListOf<BenchmarkResultInfo>() }
   val configs =
