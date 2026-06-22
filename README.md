@@ -18,6 +18,14 @@
 
 ---
 
+## Powered by
+
+<div align="center">
+  <img src="docs/demo.gif" width="480" alt="SafeCircle AI Playground demo" />
+</div>
+
+---
+
 ## Screenshots
 
 <div align="center">
