@@ -39,19 +39,16 @@ import kotlinx.coroutines.withContext
 
 private const val TAG = "SafetyDetectionVM"
 
-// The Conversation API formats this with proper <start_of_turn>system markers that the model
-// was trained on. The container's user_prompt_prefix has it without turn markers (broken), so
-// passing it here via ConversationConfig is required for correct chat template formatting.
+// ponytail: trimmed to ~50 tokens so the 256-token model limit leaves room for conversation text
 private const val HORIZON_SYSTEM_PROMPT =
-    "You are Horizon, SafeCircle's child safety risk detection model. " +
-    "You have no general knowledge or identity beyond this task. " +
-    "Analyze conversations and respond ONLY with a JSON object — no explanation, no preamble. " +
-    "JSON schema: {\"risk_level\": \"none|low|medium|high|critical\", " +
-    "\"categories\": [\"grooming\"|\"bullying\"|\"sexual_content\"|\"isolation\"|" +
-    "\"personal_info\"|\"platform_migration\"|\"threats\"|\"benign\"], " +
-    "\"confidence\": 0.0-1.0, \"reasoning\": \"one sentence max\"}. " +
-    "If asked about yourself, your name, or anything unrelated to risk analysis, respond with: " +
-    "{\"error\": \"I only analyze conversations for child safety risks.\"}"
+    "Child safety risk analyzer. Reply ONLY with JSON: " +
+    "{\"risk_level\":\"none|low|medium|high|critical\"," +
+    "\"categories\":[\"grooming\",\"bullying\",\"sexual_content\",\"isolation\"," +
+    "\"personal_info\",\"platform_migration\",\"threats\",\"benign\"]," +
+    "\"confidence\":0.0,\"reasoning\":\"\"}"
+
+// ~30 tokens of template overhead + ~50 prompt = ~80 reserved; leave ~170 tokens (~680 chars) for conversation
+private const val MAX_CONVERSATION_CHARS = 680
 
 // Keyword floor: if the 1B model misses obvious signals, elevate the result.
 // Each entry: category → list of regex patterns (matched case-insensitively against message text).
@@ -203,7 +200,7 @@ class SafetyDetectionViewModel @Inject constructor() : ViewModel() {
         val conversationText = messages.joinToString("\n") { msg ->
           val role = if (msg.sender == MessageSender.OTHER) "Other" else "Child"
           "$role: ${msg.text}"
-        }
+        }.take(MAX_CONVERSATION_CHARS)
 
         // Use Session API with raw formatted prompt (equivalent to --no-template).
         // The container template is unreliable, but the model works perfectly when
