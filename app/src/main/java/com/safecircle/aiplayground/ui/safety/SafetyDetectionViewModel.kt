@@ -23,6 +23,9 @@ import com.safecircle.aiplayground.GalleryEvent
 import com.safecircle.aiplayground.logEvent
 import com.safecircle.aiplayground.data.ModelDownloadStatusType
 import com.safecircle.aiplayground.runtime.runtimeHelper
+import com.safecircle.aiplayground.runtime.vigil.VigilModelInstance
+import com.safecircle.aiplayground.runtime.vigil.VigilPrediction
+import com.safecircle.aiplayground.runtime.vigil.toHorizonJson
 import com.safecircle.aiplayground.ui.modelmanager.ModelManagerViewModel
 import com.safecircle.aiplayground.ui.llmchat.LlmModelInstance
 import com.google.ai.edge.litertlm.InputData
@@ -194,13 +197,16 @@ class SafetyDetectionViewModel @Inject constructor() : ViewModel() {
 
     viewModelScope.launch {
       runCatching {
+        (model.instance as? VigilModelInstance)?.let { vigil ->
+          // Vigil reads the whole conversation (most recent ~400 tokens) in the format it was trained on.
+          return@runCatching withContext(Dispatchers.Default) {
+            vigil.classifier.classify(formatConversation(messages)).toSafetyResult()
+          }
+        }
         val instance = model.instance as? LlmModelInstance
           ?: throw IllegalStateException("Model not initialized")
 
-        val conversationText = messages.joinToString("\n") { msg ->
-          val role = if (msg.sender == MessageSender.OTHER) "Other" else "Child"
-          "$role: ${msg.text}"
-        }.take(MAX_CONVERSATION_CHARS)
+        val conversationText = formatConversation(messages).take(MAX_CONVERSATION_CHARS)
 
         // Use Session API with raw formatted prompt (equivalent to --no-template).
         // The container template is unreliable, but the model works perfectly when
@@ -243,6 +249,25 @@ class SafetyDetectionViewModel @Inject constructor() : ViewModel() {
         )
       }
     }
+  }
+
+  private fun formatConversation(messages: List<ConversationMessage>): String =
+    messages.joinToString("\n") { msg ->
+      val role = if (msg.sender == MessageSender.OTHER) "Other" else "Child"
+      "$role: ${msg.text}"
+    }
+
+  // No keyword floor for Vigil: its per-category thresholds are calibrated, and a regex override would hide them.
+  private fun VigilPrediction.toSafetyResult(): SafetyResult {
+    val json = toHorizonJson()
+    return SafetyResult(
+      riskLevel = RiskLevel.entries.first { it.modelValue == riskLevel },
+      categories = flagged,
+      confidence = if (flagged.isEmpty()) 0f else riskProbability.toFloat(),
+      reasoning = reasoning,
+      rawResponse = json,
+      extractedJson = json,
+    )
   }
 
   private fun applyKeywordFloor(result: SafetyResult, messages: List<ConversationMessage>): SafetyResult {

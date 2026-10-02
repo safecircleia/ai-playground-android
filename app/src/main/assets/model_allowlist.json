@@ -114,6 +114,24 @@
         "accelerators": "gpu,cpu,npu"
       },
       "taskTypes": ["safety_detection", "llm_chat", "llm_prompt_lab", "llm_agent_chat"]
+    },
+    {
+      "name": "Vigil",
+      "modelId": "safecircleai/vigil",
+      "modelFile": "vigil_s512_fp32.tflite",
+      "commitHash": "1.0.0",
+      "url": "https://models.safecircle.tech/models/vigil/v1.0.0/vigil_s512_fp32.tflite",
+      "description": "Vigil is a compact multilingual encoder that scores a conversation for grooming, bullying, sexual content, isolation, personal-info requests, platform migration and threats in a single pass. It reads at most the latest ~400 tokens, flags each category at its own calibrated threshold, and does not generate text. CPU only, about 1.3 GB on disk.",
+      "sizeInBytes": 1289251092,
+      "version": "1.0.0",
+      "section": "Experimental",
+      "runtimeType": "vigil",
+      "minDeviceMemoryInGb": 4,
+      "defaultConfig": {
+        "accelerators": "cpu",
+        "maxTokens": 512
+      },
+      "taskTypes": ["safety_detection"]
     }
   ]
 }

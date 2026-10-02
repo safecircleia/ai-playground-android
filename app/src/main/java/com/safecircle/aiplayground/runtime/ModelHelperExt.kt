@@ -19,6 +19,7 @@ package com.safecircle.aiplayground.runtime
 import com.safecircle.aiplayground.data.Model
 import com.safecircle.aiplayground.data.RuntimeType
 import com.safecircle.aiplayground.runtime.aicore.AICoreModelHelper
+import com.safecircle.aiplayground.runtime.vigil.VigilModelHelper
 import com.safecircle.aiplayground.ui.llmchat.LlmChatModelHelper
 
 var testingModelHelper: LlmModelHelper? = null
@@ -30,6 +31,9 @@ val Model.runtimeHelper: LlmModelHelper
     }
     if (this.runtimeType == RuntimeType.AICORE) {
       return AICoreModelHelper
+    }
+    if (this.runtimeType == RuntimeType.VIGIL) {
+      return VigilModelHelper
     }
     return LlmChatModelHelper
   }

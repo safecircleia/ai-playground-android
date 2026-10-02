@@ -74,7 +74,8 @@ fun DownloadModelPanel(
     ) {
       fun isDownloadButtonEnabled(downloadStatus: ModelDownloadStatusType?, model: Model): Boolean {
         val downloadFailed = downloadStatus == ModelDownloadStatusType.FAILED
-        val isLitertLm = model.runtimeType == RuntimeType.LITERT_LM
+        val isLitertLm =
+          model.runtimeType == RuntimeType.LITERT_LM || model.runtimeType == RuntimeType.VIGIL
         return !downloadFailed || isLitertLm
       }
 
