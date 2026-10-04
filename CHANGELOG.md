@@ -5,6 +5,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Fixed
+- Crash on launch ("Loading model list…" never finishing) when more than one task sat outside the predefined task order, which Vigil's dedicated task triggered
+
+### Changed
+- Updated Kotlin to 2.4.20, Gradle to 9.8.0 and the Android Gradle Plugin to 9.4.1
+- Updated all dependencies to their latest releases, including Compose BOM 2026.09.00, Hilt 2.60.1 (now on KSP instead of kapt), LiteRT-LM 0.17.1, MCP Kotlin SDK 0.15.0, Ktor 3.6.0 and Firebase BoM 34.19.0
+- Raised `compileSdk` to 37 and `targetSdk` to 36
+
 ## [1.1.0] - 2026-10-04
 
 ### Added

@@ -16,24 +16,22 @@
 
 plugins {
   alias(libs.plugins.android.application)
-  alias(libs.plugins.kotlin.android)
   alias(libs.plugins.kotlin.compose)
   alias(libs.plugins.kotlin.serialization)
   alias(libs.plugins.protobuf)
   alias(libs.plugins.hilt.application)
   alias(libs.plugins.oss.licenses)
   alias(libs.plugins.ksp)
-  kotlin("kapt")
 }
 
 android {
   namespace = "com.safecircle.aiplayground"
-  compileSdk = 35
+  compileSdk = 37
 
   defaultConfig {
     applicationId = "com.safecircle.aiplayground"
     minSdk = 30
-    targetSdk = 35
+    targetSdk = 36
     versionCode = 3
     versionName = "1.1.0"
 
@@ -70,13 +68,15 @@ android {
     sourceCompatibility = JavaVersion.VERSION_11
     targetCompatibility = JavaVersion.VERSION_11
   }
-  kotlinOptions {
-    jvmTarget = "11"
-    freeCompilerArgs += "-Xcontext-receivers"
-  }
   buildFeatures {
     compose = true
     buildConfig = true
+  }
+}
+
+kotlin {
+  compilerOptions {
+    jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_11)
   }
 }
 
@@ -116,7 +116,7 @@ dependencies {
   implementation(libs.play.services.oss.licenses)
   implementation(libs.androidx.exifinterface)
   implementation(libs.moshi.kotlin)
-  kapt(libs.hilt.android.compiler)
+  ksp(libs.hilt.android.compiler)
   testImplementation(libs.junit)
   androidTestImplementation(libs.androidx.junit)
   androidTestImplementation(libs.androidx.espresso.core)
@@ -133,6 +133,6 @@ dependencies {
 }
 
 protobuf {
-  protoc { artifact = "com.google.protobuf:protoc:4.26.1" }
+  protoc { artifact = "com.google.protobuf:protoc:4.36.2" }
   generateProtoTasks { all().forEach { it.plugins { create("java") { option("lite") } } } }
 }

@@ -19,8 +19,8 @@ import com.google.ai.edge.litertlm.ToolParam
 import com.google.ai.edge.litertlm.ToolSet
 import com.squareup.moshi.JsonAdapter
 import com.squareup.moshi.Moshi
-import io.modelcontextprotocol.kotlin.sdk.CallToolRequest
-import io.modelcontextprotocol.kotlin.sdk.TextContent
+import io.modelcontextprotocol.kotlin.sdk.types.CallToolRequest
+import io.modelcontextprotocol.kotlin.sdk.types.TextContent
 import io.modelcontextprotocol.kotlin.sdk.types.CallToolRequestParams
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.channels.Channel
