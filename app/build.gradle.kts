@@ -32,8 +32,8 @@ android {
     applicationId = "com.safecircle.aiplayground"
     minSdk = 30
     targetSdk = 36
-    versionCode = 4
-    versionName = "1.1.1"
+    versionCode = 5
+    versionName = "1.1.2"
 
     // Needed for HuggingFace auth workflows.
     // Use the scheme of the "Redirect URLs" in HuggingFace app.

@@ -1,6 +1,5 @@
-Fixes a launch problem in 1.1.0 and updates the app's underlying libraries.
+Vigil is now front and center.
 
-• Vigil, a compact on-device encoder, now has its own page
-• Fixed the model list never finishing loading
-• Updated to the latest Android and Kotlin tooling
+• New Vigil announcement in the Model Manager
+• Vigil, a compact on-device encoder, has its own page
 • All inference runs entirely on-device — no data leaves your phone
