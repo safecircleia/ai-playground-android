@@ -33,7 +33,6 @@ import com.safecircle.aiplayground.customtasks.common.CustomTask
 import com.safecircle.aiplayground.data.Accelerator
 import com.safecircle.aiplayground.data.BuiltInTaskId
 import com.safecircle.aiplayground.data.Category
-import com.safecircle.aiplayground.data.CategoryInfo
 import com.safecircle.aiplayground.data.Config
 import com.safecircle.aiplayground.data.ConfigKeys
 import com.safecircle.aiplayground.data.DataStoreRepository
@@ -1275,9 +1274,6 @@ constructor(
   private fun groupTasksByCategory(): Map<String, List<Task>> {
     val tasks = getActiveCustomTasks().map { it.task }
 
-    val categoryMap: Map<String, CategoryInfo> =
-      tasks.associateBy { it.category.id }.mapValues { it.value.category }
-
     val groupedTasks = tasks.groupBy { it.category.id }
     val groupedSortedTasks: MutableMap<String, List<Task>> = mutableMapOf()
     // Sort the tasks in categories by pre-defined order. Sort other tasks by label.
@@ -1299,11 +1295,7 @@ constructor(
             } else if (indexB != -1) {
               1
             } else {
-              val ca = categoryMap[a.id]!!
-              val cb = categoryMap[b.id]!!
-              val caLabel = getCategoryLabel(context = context, category = ca)
-              val cbLabel = getCategoryLabel(context = context, category = cb)
-              caLabel.compareTo(cbLabel)
+              a.label.compareTo(b.label)
             }
           } else {
             a.label.compareTo(b.label)
@@ -1316,17 +1308,6 @@ constructor(
     }
 
     return groupedSortedTasks
-  }
-
-  private fun getCategoryLabel(context: Context, category: CategoryInfo): String {
-    val stringRes = category.labelStringRes
-    val label = category.label
-    if (stringRes != null) {
-      return context.getString(stringRes)
-    } else if (label != null) {
-      return label
-    }
-    return context.getString(R.string.category_unlabeled)
   }
 
   /**
