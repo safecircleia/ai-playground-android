@@ -1,6 +1,5 @@
-Initial release of SafeCircle AI Playground.
+New: Vigil, a compact on-device encoder that scores a conversation for grooming, bullying, threats and more in a single pass.
 
-• On-device safety detection with Horizon Mobile and Horizon Edge models
-• Agent Chat with 12 built-in skills and MCP tool support
-• LLM Chat and Prompt Lab for general-purpose conversation
+• Dedicated Vigil page with its own model list
+• Per-category thresholds, runs on CPU, about 1.3 GB download
 • All inference runs entirely on-device — no data leaves your phone
