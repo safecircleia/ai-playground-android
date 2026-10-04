@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 - Replaced the unused Play Services TFLite dependencies with LiteRT 2.2.0
+- Pinned LiteRT-LM to 0.16.1 instead of `latest.release`, whose newer builds require Kotlin 2.4
 
 ## [1.0.0] - 2026-06-22
 
