@@ -37,20 +37,7 @@ import dagger.multibindings.IntoSet
 import javax.inject.Inject
 import kotlinx.coroutines.CoroutineScope
 
-class SafetyDetectionTask @Inject constructor() : CustomTask {
-  override val task: Task =
-    Task(
-      id = BuiltInTaskId.SAFETY_DETECTION,
-      label = "Safety Detection",
-      category = Category.LLM,
-      icon = Icons.Outlined.Shield,
-      models = mutableListOf(),
-      description = "Paste any text and see how Horizon classifies it in real time. Detects grooming, bullying, threats, and more — directly on your device in under 100ms. No data is ever sent to a server.",
-      shortDescription = "Detect safety risks on-device",
-      docUrl = "",
-      sourceCodeUrl = "",
-    )
-
+abstract class BaseSafetyTask(override val task: Task) : CustomTask {
   override fun initializeModelFn(
     context: Context,
     coroutineScope: CoroutineScope,
@@ -87,9 +74,42 @@ class SafetyDetectionTask @Inject constructor() : CustomTask {
       modelManagerViewModel = myData.modelManagerViewModel,
       viewModel = viewModel,
       navigateUp = myData.onNavUp,
+      taskId = task.id,
     )
   }
 }
+
+class SafetyDetectionTask @Inject constructor() :
+  BaseSafetyTask(
+    Task(
+      id = BuiltInTaskId.SAFETY_DETECTION,
+      label = "Safety Detection",
+      category = Category.LLM,
+      icon = Icons.Outlined.Shield,
+      models = mutableListOf(),
+      description = "Paste any text and see how Horizon classifies it in real time. Detects grooming, bullying, threats, and more — directly on your device in under 100ms. No data is ever sent to a server.",
+      shortDescription = "Detect safety risks on-device",
+      docUrl = "",
+      sourceCodeUrl = "",
+    )
+  )
+
+// Vigil is an encoder classifier, not an LLM, so it gets its own task and does not appear in chat modes.
+class VigilDetectionTask @Inject constructor() :
+  BaseSafetyTask(
+    Task(
+      id = BuiltInTaskId.VIGIL_DETECTION,
+      label = "Vigil",
+      category = Category.LLM,
+      icon = Icons.Outlined.Shield,
+      models = mutableListOf(),
+      description = "Paste a conversation and see how Vigil scores it. A compact multilingual encoder that flags grooming, bullying, sexual content, isolation, personal-info requests, platform migration and threats in a single pass, on-device. No data is ever sent to a server.",
+      shortDescription = "Encoder-based safety scoring",
+      docUrl = "",
+      sourceCodeUrl = "",
+      experimental = true,
+    )
+  )
 
 @Module
 @InstallIn(SingletonComponent::class)
@@ -98,5 +118,11 @@ internal object SafetyDetectionTaskModule {
   @IntoSet
   fun provideTask(): CustomTask {
     return SafetyDetectionTask()
+  }
+
+  @Provides
+  @IntoSet
+  fun provideVigilTask(): CustomTask {
+    return VigilDetectionTask()
   }
 }

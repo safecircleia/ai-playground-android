@@ -143,6 +143,7 @@ object BuiltInTaskId {
   const val MP_SCRAPBOOK = "mp_scrapbook"
   const val LLM_AGENT_CHAT = "llm_agent_chat"
   const val SAFETY_DETECTION = "safety_detection"
+  const val VIGIL_DETECTION = "vigil_detection"
 }
 
 private val allLegacyTaskIds: MutableSet<String> =
@@ -153,6 +154,7 @@ private val allLegacyTaskIds: MutableSet<String> =
     BuiltInTaskId.LLM_ASK_AUDIO,
     BuiltInTaskId.LLM_AGENT_CHAT,
     BuiltInTaskId.SAFETY_DETECTION,
+    BuiltInTaskId.VIGIL_DETECTION,
   )
 
 fun isLegacyTasks(id: String): Boolean {

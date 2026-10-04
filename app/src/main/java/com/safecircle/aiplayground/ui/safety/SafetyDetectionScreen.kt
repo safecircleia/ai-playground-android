@@ -121,8 +121,9 @@ fun SafetyDetectionScreen(
   modelManagerViewModel: ModelManagerViewModel,
   viewModel: SafetyDetectionViewModel,
   navigateUp: () -> Unit,
+  taskId: String = BuiltInTaskId.SAFETY_DETECTION,
 ) {
-  val task = modelManagerViewModel.getTaskById(id = BuiltInTaskId.SAFETY_DETECTION)!!
+  val task = modelManagerViewModel.getTaskById(id = taskId)!!
   val modelManagerUiState by modelManagerViewModel.uiState.collectAsState()
   val uiState by viewModel.uiState.collectAsState()
   val selectedModel = modelManagerUiState.selectedModel

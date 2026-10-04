@@ -104,7 +104,8 @@ data class AllowedModel(
         taskTypes.contains(BuiltInTaskId.LLM_ASK_IMAGE) ||
         taskTypes.contains(BuiltInTaskId.LLM_MOBILE_ACTIONS) ||
         taskTypes.contains(BuiltInTaskId.LLM_TINY_GARDEN) ||
-        taskTypes.contains(BuiltInTaskId.SAFETY_DETECTION)
+        taskTypes.contains(BuiltInTaskId.SAFETY_DETECTION) ||
+        taskTypes.contains(BuiltInTaskId.VIGIL_DETECTION)
     var configs: MutableList<Config> = mutableListOf()
     var llmMaxToken = DEFAULT_MAX_TOKEN
     var llmMaxContextLength: Int? = null

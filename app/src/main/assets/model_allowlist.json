@@ -131,7 +131,7 @@
         "accelerators": "cpu",
         "maxTokens": 512
       },
-      "taskTypes": ["safety_detection"]
+      "taskTypes": ["vigil_detection"]
     }
   ]
 }
