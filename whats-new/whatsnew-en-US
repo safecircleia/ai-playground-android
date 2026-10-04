@@ -1,5 +1,6 @@
-New: Vigil, a compact on-device encoder that scores a conversation for grooming, bullying, threats and more in a single pass.
+Fixes a launch problem in 1.1.0 and updates the app's underlying libraries.
 
-• Dedicated Vigil page with its own model list
-• Per-category thresholds, runs on CPU, about 1.3 GB download
+• Vigil, a compact on-device encoder, now has its own page
+• Fixed the model list never finishing loading
+• Updated to the latest Android and Kotlin tooling
 • All inference runs entirely on-device — no data leaves your phone
