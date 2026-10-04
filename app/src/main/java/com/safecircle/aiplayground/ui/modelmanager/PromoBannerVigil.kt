@@ -28,7 +28,6 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -47,7 +46,6 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -57,9 +55,8 @@ import com.safecircle.aiplayground.ui.theme.customColors
 private val BUTTON_PADDING = PaddingValues(start = 8.dp, top = 0.dp, end = 8.dp, bottom = 0.dp)
 
 @Composable
-fun PromoBannerGm4(onDismiss: () -> Unit, modifier: Modifier = Modifier) {
+fun PromoBannerVigil(onDismiss: () -> Unit, modifier: Modifier = Modifier) {
   val density = LocalDensity.current
-  val uriHandler = LocalUriHandler.current
   var columnHeightDp by remember { mutableStateOf(0.dp) }
 
   Box(modifier = modifier) {
@@ -92,9 +89,9 @@ fun PromoBannerGm4(onDismiss: () -> Unit, modifier: Modifier = Modifier) {
           .padding(horizontal = 16.dp)
           .padding(top = 16.dp, bottom = 8.dp)
     ) {
-      Text(text = "Horizon: Now available", style = MaterialTheme.typography.titleMedium)
+      Text(text = "Vigil: Now available", style = MaterialTheme.typography.titleMedium)
       Text(
-        "Horizon is SafeCircle’s on-device AI that detects risks like grooming, bullying, and threats in under 100 ms, entirely on the child’s phone, with no messages ever sent or viewed externally.",
+        "Vigil is a compact on-device encoder that scores a whole conversation for grooming, bullying, threats and more in a single pass, entirely on the child’s phone, with no messages ever sent or viewed externally. Try it from the Vigil card on the home screen.",
         style = MaterialTheme.typography.bodyMedium.copy(fontSize = 12.sp, lineHeight = 15.sp),
         modifier = Modifier.padding(top = 4.dp),
       )
@@ -104,13 +101,6 @@ fun PromoBannerGm4(onDismiss: () -> Unit, modifier: Modifier = Modifier) {
         horizontalArrangement = Arrangement.End,
       ) {
         TextButton(onClick = onDismiss, contentPadding = BUTTON_PADDING) { Text("Dismiss") }
-        Button(
-          onClick = { uriHandler.openUri("https://safecircle.tech/posts/releases/horizon") },
-          modifier = Modifier.padding(start = 8.dp).height(32.dp),
-          contentPadding = BUTTON_PADDING,
-        ) {
-          Text("Read more")
-        }
       }
     }
   }

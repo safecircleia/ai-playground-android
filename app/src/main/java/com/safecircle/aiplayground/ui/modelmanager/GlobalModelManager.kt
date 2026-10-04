@@ -165,7 +165,7 @@ fun GlobalModelManager(
   val modelItemExpandedStates = remember { mutableStateMapOf<String, Boolean>() }
   var selectedSection by remember { mutableStateOf<String?>(null) }
 
-  val promoId = "gm4_banner"
+  val promoId = "vigil_banner"
   var showPromo by remember { mutableStateOf(false) }
   LaunchedEffect(Unit) {
     showPromo = !viewModel.dataStoreRepository.hasViewedPromo(promoId = promoId)
@@ -327,7 +327,7 @@ fun GlobalModelManager(
                 enter = fadeIn() + slideInVertically(initialOffsetY = { -it / 2 }) + expandVertically(),
                 exit = fadeOut() + shrinkVertically(),
               ) {
-                PromoBannerGm4(
+                PromoBannerVigil(
                   onDismiss = {
                     showPromo = false
                     viewModel.dataStoreRepository.addViewedPromoId(promoId = promoId)
