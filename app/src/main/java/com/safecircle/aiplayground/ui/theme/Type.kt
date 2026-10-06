@@ -22,6 +22,7 @@ import androidx.compose.material3.Shapes
 import androidx.compose.material3.Typography
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.safecircle.aiplayground.R
 
@@ -56,6 +57,21 @@ val AppTypography =
     labelLarge = baseline.labelLarge.copy(fontFamily = appFontFamily),
     labelMedium = baseline.labelMedium.copy(fontFamily = appFontFamily),
     labelSmall = baseline.labelSmall.copy(fontFamily = appFontFamily),
+    displayLargeEmphasized = baseline.displayLargeEmphasized.copy(fontFamily = appFontFamily),
+    displayMediumEmphasized = baseline.displayMediumEmphasized.copy(fontFamily = appFontFamily),
+    displaySmallEmphasized = baseline.displaySmallEmphasized.copy(fontFamily = appFontFamily),
+    headlineLargeEmphasized = baseline.headlineLargeEmphasized.copy(fontFamily = appFontFamily),
+    headlineMediumEmphasized = baseline.headlineMediumEmphasized.copy(fontFamily = appFontFamily),
+    headlineSmallEmphasized = baseline.headlineSmallEmphasized.copy(fontFamily = appFontFamily),
+    titleLargeEmphasized = baseline.titleLargeEmphasized.copy(fontFamily = appFontFamily),
+    titleMediumEmphasized = baseline.titleMediumEmphasized.copy(fontFamily = appFontFamily),
+    titleSmallEmphasized = baseline.titleSmallEmphasized.copy(fontFamily = appFontFamily),
+    bodyLargeEmphasized = baseline.bodyLargeEmphasized.copy(fontFamily = appFontFamily),
+    bodyMediumEmphasized = baseline.bodyMediumEmphasized.copy(fontFamily = appFontFamily),
+    bodySmallEmphasized = baseline.bodySmallEmphasized.copy(fontFamily = appFontFamily),
+    labelLargeEmphasized = baseline.labelLargeEmphasized.copy(fontFamily = appFontFamily),
+    labelMediumEmphasized = baseline.labelMediumEmphasized.copy(fontFamily = appFontFamily),
+    labelSmallEmphasized = baseline.labelSmallEmphasized.copy(fontFamily = appFontFamily),
   )
 
 val titleMediumNarrow =
@@ -107,11 +123,15 @@ val headlineLargeMedium = baseline.headlineLarge.copy(fontWeight = FontWeight.Me
 val emptyStateTitle = baseline.headlineSmall.copy(fontSize = 37.sp, lineHeight = 50.sp)
 val emptyStateContent = baseline.headlineSmall.copy(fontSize = 16.sp, lineHeight = 22.sp)
 
-// MD3 shape scale — aligned to spec tokens
-val AppShapes = Shapes(
-  extraSmall = RoundedCornerShape(4),
-  small = RoundedCornerShape(8),
-  medium = RoundedCornerShape(12),
-  large = RoundedCornerShape(16),
-  extraLarge = RoundedCornerShape(28),
-)
+// Material 3 shape scale (dp corners, incl. the expressive "increased" steps).
+val AppShapes =
+  Shapes(
+    extraSmall = RoundedCornerShape(4.dp),
+    small = RoundedCornerShape(8.dp),
+    medium = RoundedCornerShape(12.dp),
+    large = RoundedCornerShape(16.dp),
+    largeIncreased = RoundedCornerShape(20.dp),
+    extraLarge = RoundedCornerShape(28.dp),
+    extraLargeIncreased = RoundedCornerShape(32.dp),
+    extraExtraLarge = RoundedCornerShape(48.dp),
+  )
