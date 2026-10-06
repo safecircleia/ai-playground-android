@@ -16,22 +16,20 @@
 
 package com.safecircle.aiplayground.ui.common
 
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.rounded.ArrowBack
 import androidx.compose.material.icons.rounded.History
 import androidx.compose.material.icons.rounded.Tune
-import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -40,7 +38,6 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
@@ -90,34 +87,25 @@ fun ModelPageAppBar(
   val isModelInitialized =
     modelInitializationStatus?.status == ModelInitializationStatusType.INITIALIZED
 
-  CenterAlignedTopAppBar(
+  TopAppBar(
     title = {
-      Column(
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(4.dp),
-      ) {
-        // Task type.
-        Row(
-          verticalAlignment = Alignment.CenterVertically,
-          horizontalArrangement = Arrangement.spacedBy(10.dp),
-        ) {
-          val tintColor =
-            if (useThemeColor) MaterialTheme.colorScheme.onSurface
-            else getTaskIconColor(task = task)
-          Icon(
-            task.icon ?: ImageVector.vectorResource(task.iconVectorResourceId!!),
-            tint = tintColor,
-            modifier = Modifier.size(24.dp),
-            contentDescription = null,
-          )
-          Text(task.label, style = MaterialTheme.typography.titleMedium, color = tintColor)
-        }
-
-        // Model chips pager.
-        if (!hideModelSelector) {
-          val enableModelPickerChip = !isModelInitializing && !inProgress
+      // One line: the task's icon (the "mode") next to the model chip. Without a model selector,
+      // the task label stands in for the chip.
+      Row(verticalAlignment = Alignment.CenterVertically) {
+        val tintColor =
+          if (useThemeColor) MaterialTheme.colorScheme.onSurface else getTaskIconColor(task = task)
+        Icon(
+          task.icon ?: ImageVector.vectorResource(task.iconVectorResourceId!!),
+          tint = tintColor,
+          modifier = Modifier.size(24.dp),
+          contentDescription = task.label,
+        )
+        Spacer(Modifier.width(10.dp))
+        if (hideModelSelector) {
+          Text(task.label, style = MaterialTheme.typography.titleMediumEmphasized)
+        } else {
           ModelPickerChip(
-            enabled = enableModelPickerChip,
+            enabled = !isModelInitializing && !inProgress,
             task = task,
             initialModel = model,
             modelManagerViewModel = modelManagerViewModel,
@@ -127,56 +115,36 @@ fun ModelPageAppBar(
       }
     },
     modifier = modifier,
-    // The back button.
     navigationIcon = {
-      val enableBackButton = !isModelInitializing && !inProgress
-      IconButton(onClick = onBackClicked, enabled = enableBackButton) {
+      IconButton(onClick = onBackClicked, enabled = !isModelInitializing && !inProgress) {
         Icon(
           imageVector = Icons.AutoMirrored.Rounded.ArrowBack,
           contentDescription = stringResource(R.string.cd_navigate_back_icon),
         )
       }
     },
-    // The config button for the model (if existed).
     actions = {
       val downloadSucceeded = curDownloadStatus?.status == ModelDownloadStatusType.SUCCEEDED
-      val showConfigButton = model.configs.isNotEmpty() && downloadSucceeded
-      Box(modifier = Modifier.size(42.dp), contentAlignment = Alignment.Center) {
-        var configButtonOffset = 0.dp
-        if (showConfigButton && shouldShowHistoryButton) {
-          configButtonOffset = (-40).dp
+      if (downloadSucceeded && shouldShowHistoryButton) {
+        IconButton(
+          onClick = { onHistoryClicked(model) },
+          enabled = !isModelInitializing && !modelPreparing && !inProgress && isModelInitialized,
+        ) {
+          Icon(
+            imageVector = Icons.Rounded.History,
+            contentDescription = stringResource(R.string.cd_chat_history),
+          )
         }
-        if (showConfigButton) {
-          val enableConfigButton = !isModelInitializing && !inProgress && isModelInitialized
-          IconButton(
-            onClick = { showConfigDialog = true },
-            enabled = enableConfigButton,
-            modifier =
-              Modifier.offset(x = configButtonOffset).alpha(if (!enableConfigButton) 0.5f else 1f),
-          ) {
-            Icon(
-              imageVector = Icons.Rounded.Tune,
-              contentDescription = stringResource(R.string.cd_model_settings_icon),
-              tint = MaterialTheme.colorScheme.onSurface,
-              modifier = Modifier.size(20.dp),
-            )
-          }
-        }
-        if (downloadSucceeded && shouldShowHistoryButton) {
-          val enableHistoryButton =
-            !isModelInitializing && !modelPreparing && !inProgress && isModelInitialized
-          IconButton(
-            onClick = { onHistoryClicked(model) },
-            enabled = enableHistoryButton,
-            modifier = Modifier.alpha(if (!enableHistoryButton) 0.5f else 1f),
-          ) {
-            Icon(
-              imageVector = Icons.Rounded.History,
-              contentDescription = stringResource(R.string.cd_chat_history),
-              tint = MaterialTheme.colorScheme.onSurface,
-              modifier = Modifier.size(20.dp),
-            )
-          }
+      }
+      if (model.configs.isNotEmpty() && downloadSucceeded) {
+        IconButton(
+          onClick = { showConfigDialog = true },
+          enabled = !isModelInitializing && !inProgress && isModelInitialized,
+        ) {
+          Icon(
+            imageVector = Icons.Rounded.Tune,
+            contentDescription = stringResource(R.string.cd_model_settings_icon),
+          )
         }
       }
     },

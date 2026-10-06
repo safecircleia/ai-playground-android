@@ -26,7 +26,6 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
@@ -85,7 +84,7 @@ fun ModelPickerChip(
 
   val modelInitializationStatus = modelManagerUiState.modelInitializationStatus[initialModel.name]
 
-  Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
+  Box(contentAlignment = Alignment.CenterStart) {
     Row(
       verticalAlignment = Alignment.CenterVertically,
       horizontalArrangement = Arrangement.spacedBy(2.dp),
@@ -132,7 +131,7 @@ fun ModelPickerChip(
           style = MaterialTheme.typography.labelLarge,
           modifier =
             Modifier.padding(start = 4.dp)
-              .widthIn(0.dp, screenWidthDp - 250.dp)
+              .widthIn(0.dp, screenWidthDp - 280.dp)
               .clearAndSetSemantics {},
           maxLines = 1,
           overflow = TextOverflow.MiddleEllipsis,
