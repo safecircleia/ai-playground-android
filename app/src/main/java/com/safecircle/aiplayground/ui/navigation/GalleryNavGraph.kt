@@ -22,6 +22,7 @@ import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.SharedTransitionLayout
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
 import androidx.compose.animation.core.EaseOutExpo
@@ -44,6 +45,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -79,6 +81,8 @@ import com.safecircle.aiplayground.data.isLegacyTasks
 import com.safecircle.aiplayground.ui.benchmark.BenchmarkScreen
 import com.safecircle.aiplayground.ui.common.ErrorDialog
 import com.safecircle.aiplayground.ui.common.ModelPageAppBar
+import com.safecircle.aiplayground.ui.common.expressive.LocalAnimatedVisibilityScope
+import com.safecircle.aiplayground.ui.common.expressive.LocalSharedTransitionScope
 import com.safecircle.aiplayground.ui.common.chat.ModelDownloadStatusInfoPanel
 import com.safecircle.aiplayground.ui.home.HomeScreen
 import com.safecircle.aiplayground.ui.modelmanager.GlobalModelManager
@@ -97,53 +101,6 @@ private const val ROUTE_MODEL = "route_model"
 private const val ROUTE_BENCHMARK = "benchmark"
 private const val ROUTE_MODEL_MANAGER = "model_manager"
 private const val ROUTE_NOTIFICATIONS = "notifications"
-private const val ENTER_ANIMATION_DURATION_MS = 500
-private val ENTER_ANIMATION_EASING = EaseOutExpo
-private const val ENTER_ANIMATION_DELAY_MS = 100
-
-private const val EXIT_ANIMATION_DURATION_MS = 500
-private val EXIT_ANIMATION_EASING = EaseOutExpo
-
-private fun enterTween(): FiniteAnimationSpec<IntOffset> {
-  return tween(
-    ENTER_ANIMATION_DURATION_MS,
-    easing = ENTER_ANIMATION_EASING,
-    delayMillis = ENTER_ANIMATION_DELAY_MS,
-  )
-}
-
-private fun exitTween(): FiniteAnimationSpec<IntOffset> {
-  return tween(EXIT_ANIMATION_DURATION_MS, easing = EXIT_ANIMATION_EASING)
-}
-
-private fun AnimatedContentTransitionScope<*>.slideEnter(): EnterTransition {
-  return slideIntoContainer(
-    animationSpec = enterTween(),
-    towards = AnimatedContentTransitionScope.SlideDirection.Left,
-  )
-}
-
-private fun AnimatedContentTransitionScope<*>.slideExit(): ExitTransition {
-  return slideOutOfContainer(
-    animationSpec = exitTween(),
-    towards = AnimatedContentTransitionScope.SlideDirection.Right,
-  )
-}
-
-private fun AnimatedContentTransitionScope<*>.slideUpEnter(): EnterTransition {
-  return slideIntoContainer(
-    animationSpec = enterTween(),
-    towards = AnimatedContentTransitionScope.SlideDirection.Up,
-  )
-}
-
-private fun AnimatedContentTransitionScope<*>.slideDownExit(): ExitTransition {
-  return slideOutOfContainer(
-    animationSpec = exitTween(),
-    towards = AnimatedContentTransitionScope.SlideDirection.Down,
-  )
-}
-
 /** Navigation routes. */
 @Composable
 fun GalleryNavHost(
@@ -158,6 +115,7 @@ fun GalleryNavHost(
   var enableModelListAnimation by remember { mutableStateOf(true) }
   var lastNavigatedModelName = remember { "" }
   val modelManagerUiState by modelManagerViewModel.uiState.collectAsState()
+  val nav = rememberNavTransitions()
 
   // Track whether app is in foreground.
   DisposableEffect(lifecycleOwner) {
@@ -182,227 +140,235 @@ fun GalleryNavHost(
     onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
   }
 
-  NavHost(
-    navController = navController,
-    startDestination = ROUTE_HOMESCREEN,
-    enterTransition = { EnterTransition.None },
-    exitTransition = { ExitTransition.None },
-  ) {
-    // Home screen.
-    composable(route = ROUTE_HOMESCREEN) {
-      Box(modifier = modifier.fillMaxSize()) {
-        HomeScreen(
-          modelManagerViewModel = modelManagerViewModel,
-          tosViewModel = hiltViewModel(),
-          enableAnimation = enableHomeScreenAnimation,
-          navigateToTaskScreen = { task ->
-            pickedTask = task
-            enableModelListAnimation = true
-            navController.navigate(ROUTE_MODEL_LIST)
-            logEvent(GalleryEvent.CAPABILITY_SELECT, mapOf("capability_name" to task.id))
-          },
-          onModelsClicked = { navController.navigate(ROUTE_MODEL_MANAGER) },
-        )
-      }
-    }
-
-    // Model list.
-    composable(
-      route = ROUTE_MODEL_LIST,
-      enterTransition = {
-        if (initialState.destination.route == ROUTE_HOMESCREEN) {
-          slideEnter()
-        } else {
-          EnterTransition.None
-        }
-      },
-      exitTransition = {
-        if (targetState.destination.route == ROUTE_HOMESCREEN) {
-          slideExit()
-        } else {
-          ExitTransition.None
-        }
-      },
-    ) {
-      pickedTask?.let {
-        ModelManager(
-          viewModel = modelManagerViewModel,
-          task = it,
-          enableAnimation = enableModelListAnimation,
-          onModelClicked = { model ->
-            navController.navigate("$ROUTE_MODEL/${it.id}/${model.name}")
-          },
-          onBenchmarkClicked = { model ->
-            logEvent(GalleryEvent.CAPABILITY_SELECT, mapOf("capability_name" to "benchmark_${model.name}"))
-            navController.navigate("$ROUTE_BENCHMARK/${model.name}")
-          },
-          navigateUp = {
-            enableHomeScreenAnimation = false
-            navController.navigateUp()
-          },
-        )
-      }
-    }
-
-    // Model page.
-    composable(
-      route = "$ROUTE_MODEL/{taskId}/{modelName}?query={query}",
-      arguments =
-        listOf(
-          navArgument("taskId") { type = NavType.StringType },
-          navArgument("modelName") { type = NavType.StringType },
-          navArgument("query") {
-            type = NavType.StringType
-            nullable = true
-            defaultValue = null
-          },
-        ),
-      enterTransition = { slideEnter() },
-      exitTransition = { slideExit() },
-    ) { backStackEntry ->
-      val modelName = backStackEntry.arguments?.getString("modelName") ?: ""
-      val taskId = backStackEntry.arguments?.getString("taskId") ?: ""
-      val queryParam = backStackEntry.arguments?.getString("query")
-      val scope = rememberCoroutineScope()
-      val context = LocalContext.current
-
-      modelManagerViewModel.getModelByName(name = modelName)?.let { initialModel ->
-        if (lastNavigatedModelName != modelName) {
-          modelManagerViewModel.selectModel(initialModel)
-          lastNavigatedModelName = modelName
-        }
-
-        val customTask = modelManagerViewModel.getCustomTaskByTaskId(id = taskId)
-        if (customTask != null) {
-          if (isLegacyTasks(customTask.task.id)) {
-            customTask.MainScreen(
-              data =
-                CustomTaskDataForBuiltinTask(
-                  modelManagerViewModel = modelManagerViewModel,
-                  onNavUp = {
-                    enableModelListAnimation = false
-                    lastNavigatedModelName = ""
-                    navController.navigateUp()
-                  },
-                  initialQuery = queryParam,
-                )
-            )
-          } else {
-            var disableAppBarControls by remember { mutableStateOf(false) }
-            var hideTopBar by remember { mutableStateOf(false) }
-            var customNavigateUpCallback by remember { mutableStateOf<(() -> Unit)?>(null) }
-            CustomTaskScreen(
-              task = customTask.task,
-              modelManagerViewModel = modelManagerViewModel,
-              onNavigateUp = {
-                if (customNavigateUpCallback != null) {
-                  customNavigateUpCallback?.invoke()
-                } else {
-                  enableModelListAnimation = false
-                  lastNavigatedModelName = ""
-                  navController.navigateUp()
-
-                  // clean up all models.
-                  for (curModel in customTask.task.models) {
-                    val instanceToCleanUp = curModel.instance
-                    scope.launch(Dispatchers.Default) {
-                      modelManagerViewModel.cleanupModel(
-                        context = context,
-                        task = customTask.task,
-                        model = curModel,
-                        instanceToCleanUp = instanceToCleanUp,
-                      )
-                    }
-                  }
-                }
-              },
-              disableAppBarControls = disableAppBarControls,
-              hideTopBar = hideTopBar,
-              useThemeColor = customTask.task.useThemeColor,
-            ) { bottomPadding ->
-              customTask.MainScreen(
-                data =
-                  CustomTaskData(
-                    modelManagerViewModel = modelManagerViewModel,
-                    bottomPadding = bottomPadding,
-                    setAppBarControlsDisabled = { disableAppBarControls = it },
-                    setTopBarVisible = { hideTopBar = !it },
-                    setCustomNavigateUpCallback = { customNavigateUpCallback = it },
-                  )
+  SharedTransitionLayout {
+    CompositionLocalProvider(LocalSharedTransitionScope provides this) {
+      NavHost(
+        navController = navController,
+        startDestination = ROUTE_HOMESCREEN,
+        enterTransition = { EnterTransition.None },
+        exitTransition = { ExitTransition.None },
+      ) {
+        // Home screen.
+        composable(route = ROUTE_HOMESCREEN) {
+          CompositionLocalProvider(LocalAnimatedVisibilityScope provides this) {
+            Box(modifier = modifier.fillMaxSize()) {
+              HomeScreen(
+                modelManagerViewModel = modelManagerViewModel,
+                tosViewModel = hiltViewModel(),
+                enableAnimation = enableHomeScreenAnimation,
+                navigateToTaskScreen = { task ->
+                  pickedTask = task
+                  enableModelListAnimation = true
+                  navController.navigate(ROUTE_MODEL_LIST)
+                  logEvent(GalleryEvent.CAPABILITY_SELECT, mapOf("capability_name" to task.id))
+                },
+                onModelsClicked = { navController.navigate(ROUTE_MODEL_MANAGER) },
               )
             }
           }
         }
-      }
-    }
 
-    // Global model manager page.
-    composable(
-      route = ROUTE_MODEL_MANAGER,
-      enterTransition = {
-        if (
-          initialState.destination.route?.startsWith(ROUTE_BENCHMARK) == true ||
-            initialState.destination.route?.startsWith(ROUTE_MODEL) == true
-        ) {
-          null
-        } else {
-          slideUpEnter()
-        }
-      },
-      exitTransition = {
-        if (
-          targetState.destination.route?.startsWith(ROUTE_BENCHMARK) == true ||
-            targetState.destination.route?.startsWith(ROUTE_MODEL) == true
-        ) {
-          null
-        } else {
-          slideDownExit()
-        }
-      },
-    ) { backStackEntry ->
-      GlobalModelManager(
-        viewModel = modelManagerViewModel,
-        navigateUp = {
-          enableHomeScreenAnimation = false
-          navController.navigateUp()
-        },
-        onModelSelected = { task, model ->
-          navController.navigate("$ROUTE_MODEL/${task.id}/${model.name}")
-        },
-        onBenchmarkClicked = { model ->
-          logEvent(GalleryEvent.CAPABILITY_SELECT, mapOf("capability_name" to "benchmark_${model.name}"))
-          navController.navigate("$ROUTE_BENCHMARK/${model.name}")
-        },
-      )
-    }
-
-    // Notifications page.
-    composable(
-      route = ROUTE_NOTIFICATIONS,
-      enterTransition = { slideUpEnter() },
-      exitTransition = { slideDownExit() },
-    ) {
-      NotificationsScreen(navigateUp = { navController.navigateUp() })
-    }
-
-    // Benchmark creation page.
-    composable(
-      route = "$ROUTE_BENCHMARK/{modelName}",
-      arguments = listOf(navArgument("modelName") { type = NavType.StringType }),
-      enterTransition = { slideEnter() },
-      exitTransition = { slideExit() },
-    ) { backStackEntry ->
-      val modelName = backStackEntry.arguments?.getString("modelName") ?: ""
-
-      modelManagerViewModel.getModelByName(name = modelName)?.let { model ->
-        BenchmarkScreen(
-          initialModel = model,
-          modelManagerViewModel = modelManagerViewModel,
-          onBackClicked = {
-            enableModelListAnimation = false
-            navController.navigateUp()
+        // Model list.
+        composable(
+          route = ROUTE_MODEL_LIST,
+          enterTransition = {
+            if (initialState.destination.route == ROUTE_HOMESCREEN) {
+              nav.slideEnter(this)
+            } else {
+              EnterTransition.None
+            }
           },
-        )
+          exitTransition = {
+            if (targetState.destination.route == ROUTE_HOMESCREEN) {
+              nav.slideExit(this)
+            } else {
+              ExitTransition.None
+            }
+          },
+        ) {
+          CompositionLocalProvider(LocalAnimatedVisibilityScope provides this) {
+            pickedTask?.let {
+              ModelManager(
+                viewModel = modelManagerViewModel,
+                task = it,
+                enableAnimation = enableModelListAnimation,
+                onModelClicked = { model ->
+                  navController.navigate("$ROUTE_MODEL/${it.id}/${model.name}")
+                },
+                onBenchmarkClicked = { model ->
+                  logEvent(GalleryEvent.CAPABILITY_SELECT, mapOf("capability_name" to "benchmark_${model.name}"))
+                  navController.navigate("$ROUTE_BENCHMARK/${model.name}")
+                },
+                navigateUp = {
+                  enableHomeScreenAnimation = false
+                  navController.navigateUp()
+                },
+              )
+            }
+          }
+        }
+
+        // Model page.
+        composable(
+          route = "$ROUTE_MODEL/{taskId}/{modelName}?query={query}",
+          arguments =
+            listOf(
+              navArgument("taskId") { type = NavType.StringType },
+              navArgument("modelName") { type = NavType.StringType },
+              navArgument("query") {
+                type = NavType.StringType
+                nullable = true
+                defaultValue = null
+              },
+            ),
+          enterTransition = { nav.slideEnter(this) },
+          exitTransition = { nav.slideExit(this) },
+        ) { backStackEntry ->
+          val modelName = backStackEntry.arguments?.getString("modelName") ?: ""
+          val taskId = backStackEntry.arguments?.getString("taskId") ?: ""
+          val queryParam = backStackEntry.arguments?.getString("query")
+          val scope = rememberCoroutineScope()
+          val context = LocalContext.current
+
+          modelManagerViewModel.getModelByName(name = modelName)?.let { initialModel ->
+            if (lastNavigatedModelName != modelName) {
+              modelManagerViewModel.selectModel(initialModel)
+              lastNavigatedModelName = modelName
+            }
+
+            val customTask = modelManagerViewModel.getCustomTaskByTaskId(id = taskId)
+            if (customTask != null) {
+              if (isLegacyTasks(customTask.task.id)) {
+                customTask.MainScreen(
+                  data =
+                    CustomTaskDataForBuiltinTask(
+                      modelManagerViewModel = modelManagerViewModel,
+                      onNavUp = {
+                        enableModelListAnimation = false
+                        lastNavigatedModelName = ""
+                        navController.navigateUp()
+                      },
+                      initialQuery = queryParam,
+                    )
+                )
+              } else {
+                var disableAppBarControls by remember { mutableStateOf(false) }
+                var hideTopBar by remember { mutableStateOf(false) }
+                var customNavigateUpCallback by remember { mutableStateOf<(() -> Unit)?>(null) }
+                CustomTaskScreen(
+                  task = customTask.task,
+                  modelManagerViewModel = modelManagerViewModel,
+                  onNavigateUp = {
+                    if (customNavigateUpCallback != null) {
+                      customNavigateUpCallback?.invoke()
+                    } else {
+                      enableModelListAnimation = false
+                      lastNavigatedModelName = ""
+                      navController.navigateUp()
+
+                      // clean up all models.
+                      for (curModel in customTask.task.models) {
+                        val instanceToCleanUp = curModel.instance
+                        scope.launch(Dispatchers.Default) {
+                          modelManagerViewModel.cleanupModel(
+                            context = context,
+                            task = customTask.task,
+                            model = curModel,
+                            instanceToCleanUp = instanceToCleanUp,
+                          )
+                        }
+                      }
+                    }
+                  },
+                  disableAppBarControls = disableAppBarControls,
+                  hideTopBar = hideTopBar,
+                  useThemeColor = customTask.task.useThemeColor,
+                ) { bottomPadding ->
+                  customTask.MainScreen(
+                    data =
+                      CustomTaskData(
+                        modelManagerViewModel = modelManagerViewModel,
+                        bottomPadding = bottomPadding,
+                        setAppBarControlsDisabled = { disableAppBarControls = it },
+                        setTopBarVisible = { hideTopBar = !it },
+                        setCustomNavigateUpCallback = { customNavigateUpCallback = it },
+                      )
+                  )
+                }
+              }
+            }
+          }
+        }
+
+        // Global model manager page.
+        composable(
+          route = ROUTE_MODEL_MANAGER,
+          enterTransition = {
+            if (
+              initialState.destination.route?.startsWith(ROUTE_BENCHMARK) == true ||
+                initialState.destination.route?.startsWith(ROUTE_MODEL) == true
+            ) {
+              null
+            } else {
+              nav.slideUpEnter(this)
+            }
+          },
+          exitTransition = {
+            if (
+              targetState.destination.route?.startsWith(ROUTE_BENCHMARK) == true ||
+                targetState.destination.route?.startsWith(ROUTE_MODEL) == true
+            ) {
+              null
+            } else {
+              nav.slideDownExit(this)
+            }
+          },
+        ) { backStackEntry ->
+          GlobalModelManager(
+            viewModel = modelManagerViewModel,
+            navigateUp = {
+              enableHomeScreenAnimation = false
+              navController.navigateUp()
+            },
+            onModelSelected = { task, model ->
+              navController.navigate("$ROUTE_MODEL/${task.id}/${model.name}")
+            },
+            onBenchmarkClicked = { model ->
+              logEvent(GalleryEvent.CAPABILITY_SELECT, mapOf("capability_name" to "benchmark_${model.name}"))
+              navController.navigate("$ROUTE_BENCHMARK/${model.name}")
+            },
+          )
+        }
+
+        // Notifications page.
+        composable(
+          route = ROUTE_NOTIFICATIONS,
+          enterTransition = { nav.slideUpEnter(this) },
+          exitTransition = { nav.slideDownExit(this) },
+        ) {
+          NotificationsScreen(navigateUp = { navController.navigateUp() })
+        }
+
+        // Benchmark creation page.
+        composable(
+          route = "$ROUTE_BENCHMARK/{modelName}",
+          arguments = listOf(navArgument("modelName") { type = NavType.StringType }),
+          enterTransition = { nav.slideEnter(this) },
+          exitTransition = { nav.slideExit(this) },
+        ) { backStackEntry ->
+          val modelName = backStackEntry.arguments?.getString("modelName") ?: ""
+
+          modelManagerViewModel.getModelByName(name = modelName)?.let { model ->
+            BenchmarkScreen(
+              initialModel = model,
+              modelManagerViewModel = modelManagerViewModel,
+              onBackClicked = {
+                enableModelListAnimation = false
+                navController.navigateUp()
+              },
+            )
+          }
+        }
       }
     }
   }

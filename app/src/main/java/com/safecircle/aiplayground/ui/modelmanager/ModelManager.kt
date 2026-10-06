@@ -31,11 +31,14 @@ import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import com.safecircle.aiplayground.GalleryTopAppBar
 import com.safecircle.aiplayground.data.AppBarAction
 import com.safecircle.aiplayground.data.AppBarActionType
 import com.safecircle.aiplayground.data.Model
 import com.safecircle.aiplayground.data.Task
+import com.safecircle.aiplayground.ui.common.TaskIcon
+import com.safecircle.aiplayground.ui.common.expressive.sharedBadge
 
 /** A screen to manage models. */
 @OptIn(ExperimentalMaterial3Api::class)
@@ -79,6 +82,9 @@ fun ModelManager(
       GalleryTopAppBar(
         title = title,
         leftAction = AppBarAction(actionType = AppBarActionType.NAVIGATE_UP, actionFn = navigateUp),
+        titleIcon = {
+          TaskIcon(task = task, modifier = Modifier.sharedBadge(task.id), width = 32.dp)
+        },
       )
     },
   ) { innerPadding ->

@@ -57,6 +57,7 @@ fun GalleryTopAppBar(
   rightAction: AppBarAction? = null,
   scrollBehavior: TopAppBarScrollBehavior? = null,
   subtitle: String = "",
+  titleIcon: (@Composable () -> Unit)? = null,
 ) {
   val titleColor = MaterialTheme.colorScheme.onSurface
   CenterAlignedTopAppBar(
@@ -66,6 +67,7 @@ fun GalleryTopAppBar(
           verticalAlignment = Alignment.CenterVertically,
           horizontalArrangement = Arrangement.spacedBy(12.dp),
         ) {
+          titleIcon?.invoke()
           if (title == stringResource(R.string.app_name)) {
             Icon(
               painterResource(R.drawable.logo),
