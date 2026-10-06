@@ -16,6 +16,10 @@
 
 package com.safecircle.aiplayground.ui.common
 
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Icon
+import androidx.compose.material.icons.rounded.Memory
+import androidx.compose.material.icons.Icons
 import android.app.ActivityManager
 import android.content.Context
 import android.os.Build
@@ -35,7 +39,14 @@ private const val BYTES_IN_GB = 1024f * 1024 * 1024
 @Composable
 fun MemoryWarningAlert(onProceeded: () -> Unit, onDismissed: () -> Unit) {
   AlertDialog(
-    title = { Text(stringResource(R.string.memory_warning_title)) },
+    shape = MaterialTheme.shapes.extraLarge,
+    icon = { Icon(Icons.Rounded.Memory, contentDescription = null) },
+    title = {
+      Text(
+        stringResource(R.string.memory_warning_title),
+        style = MaterialTheme.typography.headlineSmallEmphasized,
+      )
+    },
     text = { Text(stringResource(R.string.memory_warning_content)) },
     onDismissRequest = onDismissed,
     confirmButton = {

@@ -16,6 +16,18 @@
 
 package com.safecircle.aiplayground.ui.safety
 
+import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.foundation.horizontalScroll
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material3.SuggestionChip
+import androidx.compose.material3.LoadingIndicator
+import androidx.compose.material3.LinearWavyProgressIndicator
+import androidx.compose.material.icons.rounded.Block
+import androidx.compose.material.icons.rounded.SwapHoriz
+import androidx.compose.material.icons.rounded.ChevronRight
+import androidx.compose.ui.graphics.vector.ImageVector
+import com.safecircle.aiplayground.ui.common.expressive.ShapeBadge
+import com.safecircle.aiplayground.ui.theme.heroFontFamily
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.Spring
@@ -246,6 +258,8 @@ private val TEMPLATE_CONVERSATIONS = listOf(
   ),
 )
 
+private val RESULT_CARD_INSET = 108.dp
+
 @Composable
 private fun SafetyDetectionContent(
   uiState: SafetyDetectionUiState,
@@ -269,6 +283,12 @@ private fun SafetyDetectionContent(
     if (uiState.result != null) resultDismissed = false
   }
 
+  // Leave room for the floating result card so it never covers the content below it.
+  val topInset by animateDpAsState(
+    targetValue = if (uiState.result != null && !resultDismissed) RESULT_CARD_INSET else 8.dp,
+    animationSpec = spring(stiffness = Spring.StiffnessMediumLow),
+    label = "result inset",
+  )
   val hasContent = messages.any { it.text.isNotBlank() }
   val canAnalyze = hasContent && !uiState.isLoading && modelReady && !modelInitializing
 
@@ -280,33 +300,31 @@ private fun SafetyDetectionContent(
         .imePadding()
         .verticalScroll(scrollState)
         .padding(horizontal = 16.dp)
-        .padding(bottom = 140.dp, top = 8.dp),
-      verticalArrangement = Arrangement.spacedBy(10.dp),
+        .padding(bottom = 176.dp)
+        .padding(top = topInset),
+      verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
-      // Template chips row
+      IntroHeader()
+
+      SectionLabel("Try an example")
       Row(
         horizontalArrangement = Arrangement.spacedBy(8.dp),
-        modifier = Modifier.fillMaxWidth(),
+        modifier = Modifier.fillMaxWidth().horizontalScroll(rememberScrollState()),
       ) {
         TEMPLATE_CONVERSATIONS.forEach { (label, template) ->
-          Surface(
+          SuggestionChip(
             onClick = {
               messages.clear()
               messages.addAll(template)
             },
-            shape = RoundedCornerShape(20.dp),
-            color = MaterialTheme.colorScheme.surfaceVariant,
-          ) {
-            Text(
-              label,
-              style = MaterialTheme.typography.labelSmall,
-              modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
-            )
-          }
+            label = { Text(label, style = MaterialTheme.typography.labelLargeEmphasized) },
+            icon = { Icon(templateIcon(label), contentDescription = null, modifier = Modifier.size(18.dp)) },
+            shape = CircleShape,
+          )
         }
       }
 
-      // Chat bubbles
+      SectionLabel("Conversation")
       messages.forEachIndexed { index, message ->
         AnimatedVisibility(
           visible = true,
@@ -334,7 +352,7 @@ private fun SafetyDetectionContent(
     AnimatedVisibility(
       visible = uiState.result != null && !resultDismissed,
       enter = slideInVertically(
-        animationSpec = tween(300),
+        animationSpec = spring(stiffness = Spring.StiffnessMediumLow),
         initialOffsetY = { -it },
       ) + fadeIn(animationSpec = tween(300)),
       exit = fadeOut(animationSpec = tween(200)) + shrinkVertically(animationSpec = tween(200)),
@@ -364,63 +382,65 @@ private fun SafetyDetectionContent(
       }
     }
 
-    // Pinned bottom bar
+    // Pinned bottom bar: a tonal sheet with the add buttons and the primary action.
     Surface(
       modifier = Modifier.align(Alignment.BottomCenter).fillMaxWidth(),
-      shadowElevation = 8.dp,
-      color = MaterialTheme.colorScheme.surface,
+      shape = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp),
+      color = MaterialTheme.colorScheme.surfaceContainer,
+      tonalElevation = 3.dp,
+      shadowElevation = 6.dp,
     ) {
       Column(
         modifier = Modifier
-          .padding(horizontal = 16.dp, vertical = 12.dp)
+          .padding(horizontal = 16.dp, vertical = 16.dp)
           .animateContentSize(animationSpec = spring(stiffness = Spring.StiffnessMediumLow)),
-        verticalArrangement = Arrangement.spacedBy(8.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp),
       ) {
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
           FilledTonalButton(
             onClick = { messages.add(ConversationMessage(MessageSender.OTHER, "")) },
-            modifier = Modifier.weight(1f),
+            modifier = Modifier.weight(1f).height(48.dp),
             colors = ButtonDefaults.filledTonalButtonColors(
               containerColor = MaterialTheme.colorScheme.secondaryContainer,
             ),
           ) {
-            Icon(Icons.Rounded.Add, contentDescription = null, modifier = Modifier.size(16.dp))
-            Spacer(Modifier.width(4.dp))
-            Text("Other")
+            Icon(Icons.Rounded.Add, contentDescription = null, modifier = Modifier.size(18.dp))
+            Spacer(Modifier.width(6.dp))
+            Text("Other", style = MaterialTheme.typography.labelLargeEmphasized)
           }
           FilledTonalButton(
             onClick = { messages.add(ConversationMessage(MessageSender.CHILD, "")) },
-            modifier = Modifier.weight(1f),
+            modifier = Modifier.weight(1f).height(48.dp),
             colors = ButtonDefaults.filledTonalButtonColors(
               containerColor = MaterialTheme.colorScheme.tertiaryContainer,
             ),
           ) {
-            Icon(Icons.Rounded.Add, contentDescription = null, modifier = Modifier.size(16.dp))
-            Spacer(Modifier.width(4.dp))
-            Text("Child")
+            Icon(Icons.Rounded.Add, contentDescription = null, modifier = Modifier.size(18.dp))
+            Spacer(Modifier.width(6.dp))
+            Text("Child", style = MaterialTheme.typography.labelLargeEmphasized)
           }
         }
         Button(
           onClick = { onAnalyze(messages.filter { it.text.isNotBlank() }) },
           enabled = canAnalyze,
-          modifier = Modifier.fillMaxWidth(),
+          modifier = Modifier.fillMaxWidth().height(56.dp),
         ) {
           if (uiState.isLoading) {
-            CircularProgressIndicator(
-              modifier = Modifier.size(18.dp),
-              strokeWidth = 2.dp,
+            LoadingIndicator(
+              modifier = Modifier.size(28.dp),
               color = MaterialTheme.colorScheme.onPrimary,
             )
           } else {
             Icon(Icons.Outlined.Shield, contentDescription = null)
           }
-          Spacer(Modifier.width(8.dp))
+          Spacer(Modifier.width(10.dp))
           Text(
             when {
               modelInitializing -> "Loading model…"
               uiState.isLoading -> "Analyzing…"
               else -> "Analyze"
-            }
+            },
+            style = MaterialTheme.typography.titleMediumEmphasized,
           )
         }
       }
@@ -438,6 +458,55 @@ private fun SafetyDetectionContent(
     )
   }
 }
+
+@Composable
+private fun IntroHeader() {
+  Row(
+    verticalAlignment = Alignment.CenterVertically,
+    horizontalArrangement = Arrangement.spacedBy(16.dp),
+    modifier = Modifier.padding(vertical = 8.dp),
+  ) {
+    ShapeBadge(
+      index = 2,
+      containerColor = MaterialTheme.colorScheme.primary,
+      contentColor = MaterialTheme.colorScheme.onPrimary,
+      size = 64.dp,
+    ) {
+      Icon(Icons.Outlined.Shield, contentDescription = null, modifier = Modifier.size(32.dp))
+    }
+    Column {
+      Text(
+        "Check a conversation",
+        style = MaterialTheme.typography.headlineSmallEmphasized,
+        fontFamily = heroFontFamily,
+        fontWeight = FontWeight.ExtraBold,
+      )
+      Text(
+        "Analysis runs on this device.",
+        style = MaterialTheme.typography.bodyMedium,
+        color = MaterialTheme.colorScheme.onSurfaceVariant,
+      )
+    }
+  }
+}
+
+@Composable
+private fun SectionLabel(text: String) {
+  Text(
+    text,
+    style = MaterialTheme.typography.labelLargeEmphasized,
+    color = MaterialTheme.colorScheme.primary,
+    modifier = Modifier.padding(horizontal = 4.dp),
+  )
+}
+
+private fun templateIcon(label: String): ImageVector =
+  when (label) {
+    "Benign" -> Icons.Rounded.CheckCircle
+    "Threats" -> Icons.Rounded.Error
+    "Sexual Content" -> Icons.Rounded.Block
+    else -> Icons.Rounded.Warning
+  }
 
 @Composable
 private fun ChatBubbleField(
@@ -461,40 +530,48 @@ private fun ChatBubbleField(
     modifier = Modifier.fillMaxWidth(),
     horizontalAlignment = if (isOther) Alignment.Start else Alignment.End,
   ) {
-    // Sender label — tap to toggle
+    // Sender chip — tap to switch who is speaking.
     Row(
       verticalAlignment = Alignment.CenterVertically,
-      modifier = Modifier.padding(bottom = 2.dp),
+      horizontalArrangement = Arrangement.spacedBy(4.dp),
+      modifier = Modifier.padding(bottom = 4.dp, start = 4.dp, end = 4.dp),
     ) {
-      Surface(
-        onClick = onSenderToggle,
-        shape = RoundedCornerShape(4.dp),
-        color = MaterialTheme.colorScheme.surface,
-      ) {
-        Text(
-          text = if (isOther) "Other" else "Child",
-          style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Medium),
-          color = onBubbleColor.copy(alpha = 0.7f),
-          modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
-        )
+      Surface(onClick = onSenderToggle, shape = CircleShape, color = bubbleColor) {
+        Row(
+          verticalAlignment = Alignment.CenterVertically,
+          horizontalArrangement = Arrangement.spacedBy(4.dp),
+          modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
+        ) {
+          Text(
+            text = if (isOther) "Other" else "Child",
+            style = MaterialTheme.typography.labelLargeEmphasized,
+            color = onBubbleColor,
+          )
+          Icon(
+            Icons.Rounded.SwapHoriz,
+            contentDescription = "Switch sender",
+            tint = onBubbleColor,
+            modifier = Modifier.size(16.dp),
+          )
+        }
       }
       if (canRemove) {
-        IconButton(onClick = onRemove, modifier = Modifier.size(24.dp)) {
-          Icon(Icons.Rounded.Close, contentDescription = "Remove", modifier = Modifier.size(14.dp))
+        IconButton(onClick = onRemove, modifier = Modifier.size(32.dp)) {
+          Icon(Icons.Rounded.Close, contentDescription = "Remove", modifier = Modifier.size(16.dp))
         }
       }
     }
 
-    // Chat bubble with text field
+    // Chat bubble with text field: large radius, small tail on the speaker's side.
     Surface(
       shape = RoundedCornerShape(
-        topStart = if (isOther) 4.dp else 16.dp,
-        topEnd = if (isOther) 16.dp else 4.dp,
-        bottomStart = 16.dp,
-        bottomEnd = 16.dp,
+        topStart = if (isOther) 6.dp else 24.dp,
+        topEnd = if (isOther) 24.dp else 6.dp,
+        bottomStart = 24.dp,
+        bottomEnd = 24.dp,
       ),
       color = bubbleColor,
-      modifier = Modifier.fillMaxWidth(0.85f),
+      modifier = Modifier.fillMaxWidth(0.88f),
     ) {
       OutlinedTextField(
         value = message.text,
@@ -503,8 +580,8 @@ private fun ChatBubbleField(
         placeholder = {
           Text(
             if (isOther) "Type message…" else "Type reply…",
-            style = MaterialTheme.typography.bodyMedium,
-            color = onBubbleColor.copy(alpha = 0.5f),
+            style = MaterialTheme.typography.bodyLarge,
+            color = onBubbleColor.copy(alpha = 0.55f),
           )
         },
         keyboardOptions = KeyboardOptions(
@@ -518,7 +595,7 @@ private fun ChatBubbleField(
           unfocusedContainerColor = androidx.compose.ui.graphics.Color.Transparent,
           focusedContainerColor = androidx.compose.ui.graphics.Color.Transparent,
         ),
-        textStyle = MaterialTheme.typography.bodyMedium.copy(color = onBubbleColor),
+        textStyle = MaterialTheme.typography.bodyLarge.copy(color = onBubbleColor),
       )
     }
   }
@@ -549,26 +626,31 @@ private fun FeedbackDialog(
 
   AlertDialog(
     onDismissRequest = onDismiss,
-    shape = RoundedCornerShape(8.dp),
-    title = { Text("Was this result accurate?") },
+    shape = MaterialTheme.shapes.extraLarge,
+    title = {
+      Text(
+        "Was this result accurate?",
+        style = MaterialTheme.typography.headlineSmallEmphasized,
+      )
+    },
     text = {
       Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
         Row(horizontalArrangement = Arrangement.spacedBy(8.dp), modifier = Modifier.fillMaxWidth()) {
           FilledTonalButton(
             onClick = { selectedSentiment = FeedbackSentiment.POSITIVE },
-            modifier = Modifier.weight(1f),
+            modifier = Modifier.weight(1f).height(48.dp),
             colors = ButtonDefaults.filledTonalButtonColors(containerColor = positiveColor),
           ) {
-            Icon(Icons.Rounded.ThumbUp, contentDescription = null, modifier = Modifier.size(16.dp))
+            Icon(Icons.Rounded.ThumbUp, contentDescription = null, modifier = Modifier.size(18.dp))
             Spacer(Modifier.width(6.dp))
             Text("Yes", maxLines = 1)
           }
           FilledTonalButton(
             onClick = { selectedSentiment = FeedbackSentiment.NEGATIVE },
-            modifier = Modifier.weight(1f),
+            modifier = Modifier.weight(1f).height(48.dp),
             colors = ButtonDefaults.filledTonalButtonColors(containerColor = negativeColor),
           ) {
-            Icon(Icons.Rounded.ThumbDown, contentDescription = null, modifier = Modifier.size(16.dp))
+            Icon(Icons.Rounded.ThumbDown, contentDescription = null, modifier = Modifier.size(18.dp))
             Spacer(Modifier.width(6.dp))
             Text("No", maxLines = 1)
           }
@@ -579,13 +661,14 @@ private fun FeedbackDialog(
           onValueChange = { comment = it },
           modifier = Modifier.fillMaxWidth(),
           placeholder = { Text("Optional comment…") },
+          shape = MaterialTheme.shapes.large,
           maxLines = 3,
         )
 
         Text(
           "Anonymous — includes conversation and model response.",
-          style = MaterialTheme.typography.labelSmall,
-          color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
+          style = MaterialTheme.typography.labelMedium,
+          color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
       }
     },
@@ -614,20 +697,33 @@ private fun SafetyResultCard(
 
   if (result.parseFailed) {
     Surface(
-      shape = RoundedCornerShape(12.dp),
-      color = MaterialTheme.colorScheme.surfaceVariant,
+      shape = MaterialTheme.shapes.extraLargeIncreased,
+      color = MaterialTheme.colorScheme.errorContainer,
       modifier = Modifier.fillMaxWidth(),
     ) {
-      Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-          Icon(Icons.Rounded.ErrorOutline, contentDescription = null, tint = MaterialTheme.colorScheme.error, modifier = Modifier.size(22.dp))
-          Text("Analysis Failed", style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-        }
-        Text(
-          "Model did not return a valid result. Try a longer conversation or re-download the model.",
-          style = MaterialTheme.typography.bodySmall,
-          color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.7f),
+      Row(
+        modifier = Modifier.padding(20.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(16.dp),
+      ) {
+        Icon(
+          Icons.Rounded.ErrorOutline,
+          contentDescription = null,
+          tint = MaterialTheme.colorScheme.onErrorContainer,
+          modifier = Modifier.size(32.dp),
         )
+        Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+          Text(
+            "Analysis failed",
+            style = MaterialTheme.typography.titleLargeEmphasized,
+            color = MaterialTheme.colorScheme.onErrorContainer,
+          )
+          Text(
+            "Model did not return a valid result. Try a longer conversation or re-download the model.",
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onErrorContainer.copy(alpha = 0.8f),
+          )
+        }
       }
     }
     return
@@ -663,32 +759,51 @@ private fun SafetyResultCard(
     RiskLevel.HIGH -> "Harmful content detected"
     RiskLevel.CRITICAL -> "Severely harmful — act immediately"
   }
+  // Each risk level gets its own expressive shape so the result reads at a glance.
+  val badgeShapeIndex = when (result.riskLevel) {
+    RiskLevel.NONE -> 0
+    RiskLevel.LOW -> 3
+    RiskLevel.MEDIUM -> 2
+    RiskLevel.HIGH, RiskLevel.CRITICAL -> 1
+  }
 
   // Compact card — tap for details
   Surface(
     onClick = { showDetail = true },
-    shape = RoundedCornerShape(12.dp),
+    shape = MaterialTheme.shapes.extraLargeIncreased,
     color = containerColor,
+    shadowElevation = 4.dp,
     modifier = Modifier.fillMaxWidth(),
   ) {
     Row(
-      modifier = Modifier.padding(14.dp),
+      modifier = Modifier.padding(16.dp),
       verticalAlignment = Alignment.CenterVertically,
-      horizontalArrangement = Arrangement.spacedBy(10.dp),
+      horizontalArrangement = Arrangement.spacedBy(16.dp),
     ) {
-      Icon(icon, contentDescription = null, tint = contentColor, modifier = Modifier.size(24.dp))
+      ShapeBadge(
+        index = badgeShapeIndex,
+        containerColor = contentColor,
+        contentColor = containerColor,
+        size = 56.dp,
+      ) {
+        Icon(icon, contentDescription = null, modifier = Modifier.size(28.dp))
+      }
       Column(modifier = Modifier.weight(1f)) {
         Text(
           result.riskLevel.label,
-          style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.SemiBold),
+          style = MaterialTheme.typography.titleLargeEmphasized,
           color = contentColor,
         )
-        Text(subtitle, style = MaterialTheme.typography.bodySmall, color = contentColor.copy(alpha = 0.7f))
+        Text(
+          subtitle,
+          style = MaterialTheme.typography.bodyMedium,
+          color = contentColor.copy(alpha = 0.8f),
+        )
       }
-      Text(
-        "Details",
-        style = MaterialTheme.typography.labelSmall,
-        color = contentColor.copy(alpha = 0.6f),
+      Icon(
+        Icons.Rounded.ChevronRight,
+        contentDescription = "Details",
+        tint = contentColor,
       )
     }
   }
@@ -697,40 +812,45 @@ private fun SafetyResultCard(
   if (showDetail) {
     AlertDialog(
       onDismissRequest = { showDetail = false },
-      shape = RoundedCornerShape(8.dp),
+      shape = MaterialTheme.shapes.extraLarge,
       title = {
-        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-          Icon(icon, contentDescription = null, tint = contentColor, modifier = Modifier.size(22.dp))
-          Text(result.riskLevel.label, style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold))
+        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+          ShapeBadge(
+            index = badgeShapeIndex,
+            containerColor = contentColor,
+            contentColor = containerColor,
+            size = 44.dp,
+          ) {
+            Icon(icon, contentDescription = null, modifier = Modifier.size(24.dp))
+          }
+          Text(result.riskLevel.label, style = MaterialTheme.typography.headlineSmallEmphasized)
         }
       },
       text = {
-        Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-          Text(subtitle, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        Column(
+          verticalArrangement = Arrangement.spacedBy(14.dp),
+          modifier = Modifier.verticalScroll(rememberScrollState()),
+        ) {
+          Text(subtitle, style = MaterialTheme.typography.bodyLarge, color = MaterialTheme.colorScheme.onSurfaceVariant)
 
           if (result.confidence > 0f) {
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-              Text("Confidence", style = MaterialTheme.typography.labelMedium)
-              Text("${(result.confidence * 100).toInt()}%", style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Medium))
+              Text("Confidence", style = MaterialTheme.typography.labelLargeEmphasized)
+              Text("${(result.confidence * 100).toInt()}%", style = MaterialTheme.typography.labelLargeEmphasized)
             }
-            LinearProgressIndicator(
+            LinearWavyProgressIndicator(
               progress = { result.confidence },
-              modifier = Modifier.fillMaxWidth().height(4.dp),
+              modifier = Modifier.fillMaxWidth(),
               color = contentColor,
               trackColor = contentColor.copy(alpha = 0.2f),
-              strokeCap = StrokeCap.Round,
             )
           }
 
           if (result.riskLevel == RiskLevel.NONE) {
-            Text("Checked for", style = MaterialTheme.typography.labelMedium)
-            FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+            Text("Checked for", style = MaterialTheme.typography.labelLargeEmphasized)
+            FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
               CATEGORY_LABELS.values.forEach { label ->
-                Box(
-                  modifier = Modifier
-                    .background(MaterialTheme.colorScheme.surfaceVariant, RoundedCornerShape(6.dp))
-                    .padding(horizontal = 8.dp, vertical = 3.dp),
-                ) { Text(label, style = MaterialTheme.typography.labelSmall) }
+                CategoryPill(label, MaterialTheme.colorScheme.surfaceContainerHighest, MaterialTheme.colorScheme.onSurface)
               }
             }
           } else {
@@ -738,32 +858,26 @@ private fun SafetyResultCard(
               .filter { it.lowercase() != "benign" }
               .mapNotNull { CATEGORY_LABELS[it.lowercase()] ?: it.replaceFirstChar { c -> c.uppercase() }.takeIf { _ -> it.isNotBlank() } }
             if (flagged.isNotEmpty()) {
-              Text("Detected categories", style = MaterialTheme.typography.labelMedium)
-              FlowRow(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                flagged.forEach { label ->
-                  Box(
-                    modifier = Modifier
-                      .background(contentColor.copy(alpha = 0.12f), RoundedCornerShape(6.dp))
-                      .padding(horizontal = 8.dp, vertical = 3.dp),
-                  ) { Text(label, style = MaterialTheme.typography.labelSmall, color = contentColor) }
-                }
+              Text("Detected categories", style = MaterialTheme.typography.labelLargeEmphasized)
+              FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                flagged.forEach { label -> CategoryPill(label, containerColor, contentColor) }
               }
             }
           }
 
           if (result.reasoning.isNotBlank()) {
-            Text("Analysis", style = MaterialTheme.typography.labelMedium)
-            Text(result.reasoning, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.9f))
+            Text("Analysis", style = MaterialTheme.typography.labelLargeEmphasized)
+            Text(result.reasoning, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
           }
 
           if (BuildConfig.DEBUG) {
             val showRaw by DebugSettings.showRawOutput.collectAsState()
             if (showRaw && result.rawResponse.isNotBlank()) {
-              Text("Raw output", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.5f))
+              Text("Raw output", style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
               Text(
                 result.extractedJson.ifBlank { result.rawResponse },
                 style = MaterialTheme.typography.bodySmall.copy(fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace),
-                color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.6f),
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
                 maxLines = 10,
                 overflow = TextOverflow.Ellipsis,
               )
@@ -784,6 +898,18 @@ private fun SafetyResultCard(
           TextButton(onClick = { showDetail = false }) { Text("Close") }
         }
       },
+    )
+  }
+}
+
+@Composable
+private fun CategoryPill(label: String, containerColor: androidx.compose.ui.graphics.Color, contentColor: androidx.compose.ui.graphics.Color) {
+  Surface(shape = CircleShape, color = containerColor) {
+    Text(
+      label,
+      style = MaterialTheme.typography.labelLargeEmphasized,
+      color = contentColor,
+      modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
     )
   }
 }

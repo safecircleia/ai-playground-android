@@ -16,6 +16,13 @@
 
 package com.safecircle.aiplayground.ui.common
 
+import com.safecircle.aiplayground.ui.common.expressive.ShapeBadge
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Icon
+import androidx.compose.material.icons.rounded.Error
+import androidx.compose.material.icons.Icons
+import androidx.compose.foundation.layout.size
+import androidx.compose.ui.Alignment
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -34,24 +41,39 @@ import androidx.compose.ui.window.Dialog
 @Composable
 fun ErrorDialog(error: String, onDismiss: () -> Unit) {
   Dialog(onDismissRequest = onDismiss) {
-    Card(modifier = Modifier.fillMaxWidth(), shape = RoundedCornerShape(16.dp)) {
+    Card(modifier = Modifier.fillMaxWidth(), shape = MaterialTheme.shapes.extraLarge) {
       Column(
-        modifier = Modifier.padding(20.dp),
+        modifier = Modifier.padding(24.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp),
       ) {
-        // Title
-        Text(
-          "Error",
-          style = MaterialTheme.typography.titleLarge,
-          modifier = Modifier.padding(bottom = 8.dp),
-        )
+        // Badge + title
+        Row(
+          verticalAlignment = Alignment.CenterVertically,
+          horizontalArrangement = Arrangement.spacedBy(16.dp),
+        ) {
+          ShapeBadge(
+            index = 1,
+            containerColor = MaterialTheme.colorScheme.errorContainer,
+            contentColor = MaterialTheme.colorScheme.onErrorContainer,
+            size = 48.dp,
+          ) {
+            Icon(Icons.Rounded.Error, contentDescription = null, modifier = Modifier.size(26.dp))
+          }
+          Text("Error", style = MaterialTheme.typography.headlineSmallEmphasized)
+        }
 
         // Error
-        Text(
-          error,
-          style = MaterialTheme.typography.bodySmall,
-          color = MaterialTheme.colorScheme.error,
-        )
+        Surface(
+          shape = MaterialTheme.shapes.large,
+          color = MaterialTheme.colorScheme.errorContainer,
+        ) {
+          Text(
+            error,
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onErrorContainer,
+            modifier = Modifier.padding(16.dp),
+          )
+        }
 
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
           Button(onClick = onDismiss) { Text("Close") }
