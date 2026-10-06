@@ -51,6 +51,9 @@ fun ModelManager(
   onModelClicked: (Model) -> Unit,
   modifier: Modifier = Modifier,
   onBenchmarkClicked: (Model) -> Unit = {},
+  // True when shown as the detail pane beside the home list: no back button/handler, no shared
+  // badge (the home card already shows it).
+  embedded: Boolean = false,
 ) {
   // Set title based on the task.
   val title = task.label
@@ -74,16 +77,22 @@ fun ModelManager(
   }
 
   // Handle system's edge swipe.
-  BackHandler { navigateUp() }
+  BackHandler(enabled = !embedded) { navigateUp() }
 
   Scaffold(
     modifier = modifier,
     topBar = {
       GalleryTopAppBar(
         title = title,
-        leftAction = AppBarAction(actionType = AppBarActionType.NAVIGATE_UP, actionFn = navigateUp),
+        leftAction =
+          if (embedded) null
+          else AppBarAction(actionType = AppBarActionType.NAVIGATE_UP, actionFn = navigateUp),
         titleIcon = {
-          TaskIcon(task = task, modifier = Modifier.sharedBadge(task.id), width = 32.dp)
+          TaskIcon(
+            task = task,
+            modifier = Modifier.sharedBadge(task.id, enabled = !embedded),
+            width = 32.dp,
+          )
         },
       )
     },

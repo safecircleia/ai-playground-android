@@ -72,6 +72,8 @@ fun HomeScreen(
   onModelsClicked: () -> Unit,
   enableAnimation: Boolean,
   modifier: Modifier = Modifier,
+  layout: HomeLayout = HomeLayout.COMPACT,
+  detailPane: (@Composable () -> Unit)? = null,
 ) {
   val uiState by modelManagerViewModel.uiState.collectAsState()
   var showSettingsDialog by remember { mutableStateOf(false) }
@@ -98,6 +100,8 @@ fun HomeScreen(
           navigateToTaskScreen = navigateToTaskScreen,
           onModelsClicked = onModelsClicked,
           onSettingsClicked = { showSettingsDialog = true },
+          layout = layout,
+          detailPane = detailPane,
           modifier = modifier,
         )
     }
@@ -152,44 +156,72 @@ private fun HomeContent(
   navigateToTaskScreen: (Task) -> Unit,
   onModelsClicked: () -> Unit,
   onSettingsClicked: () -> Unit,
+  layout: HomeLayout,
+  detailPane: (@Composable () -> Unit)?,
   modifier: Modifier = Modifier,
 ) {
   val scope = rememberCoroutineScope()
-  val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
   NotificationPermissionEffect()
-  // Close the drawer when back is pressed.
-  BackHandler(drawerState.isOpen) { scope.launch { drawerState.close() } }
 
-  ModalNavigationDrawer(
-    drawerState = drawerState,
-    drawerContent = {
-      HomeDrawerContent(
-        onModelsClick = {
-          scope.launch {
-            drawerState.close()
-            delay(DRAWER_NAV_DELAY_MS)
-            onModelsClicked()
-          }
-        },
-        onSettingsClick = {
-          onSettingsClicked()
-          scope.launch { drawerState.close() }
-        },
+  val scaffold: @Composable (onMenuClick: (() -> Unit)?, sharedBadges: Boolean, Modifier) -> Unit =
+    { onMenuClick, sharedBadges, scaffoldModifier ->
+      HomeScaffold(
+        sortedCategories = sortedCategories,
+        tasksByCategory = tasksByCategory,
+        enableAnimation = enableAnimation,
+        sharedBadges = sharedBadges,
+        onTaskClick = navigateToTaskScreen,
+        onMenuClick = onMenuClick,
+        modifier = scaffoldModifier,
       )
-    },
-    gesturesEnabled = drawerState.isOpen,
-    modifier = modifier,
-  ) {
-    HomeScaffold(
-      sortedCategories = sortedCategories,
-      tasksByCategory = tasksByCategory,
-      enableAnimation = enableAnimation,
-      sharedBadges = true,
-      onTaskClick = navigateToTaskScreen,
-      onMenuClick = {
-        scope.launch { if (drawerState.isClosed) drawerState.open() else drawerState.close() }
+    }
+
+  if (layout == HomeLayout.COMPACT) {
+    val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
+    // Close the drawer when back is pressed.
+    BackHandler(drawerState.isOpen) { scope.launch { drawerState.close() } }
+    ModalNavigationDrawer(
+      drawerState = drawerState,
+      drawerContent = {
+        HomeDrawerContent(
+          onModelsClick = {
+            scope.launch {
+              drawerState.close()
+              delay(DRAWER_NAV_DELAY_MS)
+              onModelsClicked()
+            }
+          },
+          onSettingsClick = {
+            onSettingsClicked()
+            scope.launch { drawerState.close() }
+          },
+        )
       },
-    )
+      gesturesEnabled = drawerState.isOpen,
+      modifier = modifier,
+    ) {
+      scaffold(
+        {
+          scope.launch { if (drawerState.isClosed) drawerState.open() else drawerState.close() }
+        },
+        true,
+        Modifier,
+      )
+    }
+  } else {
+    Row(modifier = modifier.fillMaxSize()) {
+      HomeRail(onModelsClick = onModelsClicked, onSettingsClick = onSettingsClicked)
+      if (layout == HomeLayout.EXPANDED && detailPane != null) {
+        // Both panes are on screen, so the shared-element key would be used twice: disable it.
+        HomeListDetail(
+          list = { scaffold(null, false, Modifier) },
+          detail = detailPane,
+          modifier = Modifier.weight(1f),
+        )
+      } else {
+        scaffold(null, true, Modifier.weight(1f))
+      }
+    }
   }
 }
 

@@ -84,7 +84,10 @@ import com.safecircle.aiplayground.ui.common.ModelPageAppBar
 import com.safecircle.aiplayground.ui.common.expressive.LocalAnimatedVisibilityScope
 import com.safecircle.aiplayground.ui.common.expressive.LocalSharedTransitionScope
 import com.safecircle.aiplayground.ui.common.chat.ModelDownloadStatusInfoPanel
+import com.safecircle.aiplayground.ui.home.HomeDetailPlaceholder
+import com.safecircle.aiplayground.ui.home.HomeLayout
 import com.safecircle.aiplayground.ui.home.HomeScreen
+import com.safecircle.aiplayground.ui.home.rememberHomeLayout
 import com.safecircle.aiplayground.ui.modelmanager.GlobalModelManager
 import com.safecircle.aiplayground.ui.modelmanager.ModelInitializationStatusType
 import com.safecircle.aiplayground.ui.modelmanager.ModelManager
@@ -151,6 +154,7 @@ fun GalleryNavHost(
         // Home screen.
         composable(route = ROUTE_HOMESCREEN) {
           CompositionLocalProvider(LocalAnimatedVisibilityScope provides this) {
+            val layout = rememberHomeLayout()
             Box(modifier = modifier.fillMaxSize()) {
               HomeScreen(
                 modelManagerViewModel = modelManagerViewModel,
@@ -159,10 +163,32 @@ fun GalleryNavHost(
                 navigateToTaskScreen = { task ->
                   pickedTask = task
                   enableModelListAnimation = true
-                  navController.navigate(ROUTE_MODEL_LIST)
+                  // In the two-pane layout the models show beside the list; otherwise navigate.
+                  if (layout != HomeLayout.EXPANDED) navController.navigate(ROUTE_MODEL_LIST)
                   logEvent(GalleryEvent.CAPABILITY_SELECT, mapOf("capability_name" to task.id))
                 },
                 onModelsClicked = { navController.navigate(ROUTE_MODEL_MANAGER) },
+                layout = layout,
+                detailPane = {
+                  val task = pickedTask
+                  if (task == null) {
+                    HomeDetailPlaceholder()
+                  } else {
+                    ModelManager(
+                      viewModel = modelManagerViewModel,
+                      task = task,
+                      enableAnimation = false,
+                      embedded = true,
+                      onModelClicked = { model ->
+                        navController.navigate("$ROUTE_MODEL/${task.id}/${model.name}")
+                      },
+                      onBenchmarkClicked = { model ->
+                        navController.navigate("$ROUTE_BENCHMARK/${model.name}")
+                      },
+                      navigateUp = { pickedTask = null },
+                    )
+                  }
+                },
               )
             }
           }
