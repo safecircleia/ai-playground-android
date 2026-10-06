@@ -56,6 +56,7 @@ fun HomeScaffold(
       horizontalAlignment = Alignment.CenterHorizontally,
     ) {
       Column(modifier = Modifier.widthIn(max = MAX_CONTENT_WIDTH).fillMaxWidth()) {
+        Spacer(Modifier.height(16.dp))
         if (sortedCategories.size > 1) {
           CategoryChips(
             categories = sortedCategories,

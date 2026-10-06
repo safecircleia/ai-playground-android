@@ -10,8 +10,10 @@ import androidx.compose.material3.TopAppBarScrollBehavior
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.font.FontWeight
 import com.safecircle.aiplayground.R
 import com.safecircle.aiplayground.ui.common.buildTrackableUrlAnnotatedString
+import com.safecircle.aiplayground.ui.theme.heroFontFamily
 
 private const val LITERT_URL = "https://huggingface.co/litert-community"
 
@@ -28,7 +30,14 @@ fun HomeTopBar(scrollBehavior: TopAppBarScrollBehavior, onMenuClick: (() -> Unit
     )
   }
   LargeFlexibleTopAppBar(
-    title = { Text(stringResource(R.string.app_name)) },
+    // Wide + heavy Roboto Flex for the brand moment; size comes from the bar's own title style.
+    title = {
+      Text(
+        stringResource(R.string.app_name),
+        fontFamily = heroFontFamily,
+        fontWeight = FontWeight.ExtraBold,
+      )
+    },
     subtitle = { Text(intro) },
     navigationIcon = {
       if (onMenuClick != null) {

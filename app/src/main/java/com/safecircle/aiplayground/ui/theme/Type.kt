@@ -21,21 +21,43 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Shapes
 import androidx.compose.material3.Typography
 import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontVariation
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.safecircle.aiplayground.R
 
+private const val DEFAULT_WIDTH = 100f
+private const val HERO_WIDTH = 125f
+
+// Roboto Flex is Material 3 Expressive's typeface: one variable font whose weight and width axes
+// are driven per style instead of shipping a static file per weight.
+private fun robotoFlex(weight: FontWeight, width: Float = DEFAULT_WIDTH) =
+  Font(
+    R.font.roboto_flex,
+    weight = weight,
+    variationSettings =
+      FontVariation.Settings(FontVariation.weight(weight.weight), FontVariation.width(width)),
+  )
+
 val appFontFamily =
   FontFamily(
-    Font(R.font.nunito_regular, FontWeight.Normal),
-    Font(R.font.nunito_extralight, FontWeight.ExtraLight),
-    Font(R.font.nunito_light, FontWeight.Light),
-    Font(R.font.nunito_medium, FontWeight.Medium),
-    Font(R.font.nunito_semibold, FontWeight.SemiBold),
-    Font(R.font.nunito_bold, FontWeight.Bold),
-    Font(R.font.nunito_extrabold, FontWeight.ExtraBold),
-    Font(R.font.nunito_black, FontWeight.Black),
+    robotoFlex(FontWeight.ExtraLight),
+    robotoFlex(FontWeight.Light),
+    robotoFlex(FontWeight.Normal),
+    robotoFlex(FontWeight.Medium),
+    robotoFlex(FontWeight.SemiBold),
+    robotoFlex(FontWeight.Bold),
+    robotoFlex(FontWeight.ExtraBold),
+    robotoFlex(FontWeight.Black),
+  )
+
+/** Wider, heavier Roboto Flex for hero/brand titles (use at large sizes only). */
+val heroFontFamily =
+  FontFamily(
+    robotoFlex(FontWeight.SemiBold, HERO_WIDTH),
+    robotoFlex(FontWeight.Bold, HERO_WIDTH),
+    robotoFlex(FontWeight.ExtraBold, HERO_WIDTH),
   )
 
 val baseline = Typography()

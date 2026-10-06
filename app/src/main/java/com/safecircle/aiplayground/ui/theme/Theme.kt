@@ -125,6 +125,7 @@ private val darkScheme =
 data class CustomColors(
   val taskCardBgColor: Color = Color.Transparent,
   val taskBgColors: List<Color> = listOf(),
+  val taskOnBgColors: List<Color> = listOf(),
   val taskOnIconColors: List<Color> = listOf(),
   val taskBgGradientColors: List<List<Color>> = listOf(),
   val taskIconColors: List<Color> = listOf(),
@@ -249,6 +250,13 @@ fun CustomColors.withTaskPalette(scheme: ColorScheme): CustomColors {
         scheme.tertiaryContainer,
         scheme.secondaryContainer,
         scheme.errorContainer,
+      ),
+    taskOnBgColors =
+      listOf(
+        scheme.onPrimaryContainer,
+        scheme.onTertiaryContainer,
+        scheme.onSecondaryContainer,
+        scheme.onErrorContainer,
       ),
     taskOnIconColors =
       listOf(

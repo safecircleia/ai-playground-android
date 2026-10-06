@@ -41,6 +41,13 @@ fun getTaskIconColor(task: Task): Color {
   return MaterialTheme.customColors.taskIconColors[colorIndex]
 }
 
+/** Text/icon colour for content drawn on [getTaskBgColor]. */
+@Composable
+fun getTaskOnBgColor(task: Task): Color {
+  val colors = MaterialTheme.customColors.taskOnBgColors
+  return colors[task.index.coerceAtLeast(0) % colors.size]
+}
+
 @Composable
 fun getTaskOnIconColor(task: Task): Color {
   val colors = MaterialTheme.customColors.taskOnIconColors

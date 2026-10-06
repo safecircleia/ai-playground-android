@@ -115,7 +115,9 @@ override the text above.
   (already in the Gradle cache). This is an alpha dependency in a shipped app; Task 1 is
   a go/no-go compile spike. Fallback is 1.4.0 with no shape presets or loading
   indicator, which needs a re-plan.
-- **Typeface.** The app uses Nunito, not Roboto Flex. It stays.
+- **Typeface.** The app used Nunito, not Roboto Flex. After the first pass the user asked for
+  the M3 Expressive font, so the app now ships Roboto Flex (variable, weight/width axes) and
+  the Nunito files are removed. Hero titles use a wide + extra-bold Roboto Flex variant.
 - **Shape scale bug.** Existing `RoundedCornerShape(4)` etc. are percent corners.
   They become dp corners app-wide, so out-of-scope screens change slightly.
 - **Dropped (no consumer in this cycle):** `LocalMotion` helper (use

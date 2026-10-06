@@ -14,6 +14,7 @@ class CustomColorsTest {
       val colors = CustomColors().withTaskPalette(scheme)
       assertEquals(4, colors.taskBgColors.size)
       assertEquals(4, colors.taskOnIconColors.size)
+      assertEquals(4, colors.taskOnBgColors.size)
       assertEquals(4, colors.taskIconColors.size)
       assertEquals(4, colors.taskBgGradientColors.size)
       colors.taskBgGradientColors.forEach { assertEquals(2, it.size) }
@@ -30,5 +31,8 @@ class CustomColorsTest {
     // Badge glyphs sit on the accent colour, so they must use its "on" pair for contrast.
     assertEquals(Color.White, colors.taskOnIconColors[0])
     assertEquals(scheme.onError, colors.taskOnIconColors[3])
+    // Text on a task's container card must use that container's "on" pair.
+    assertEquals(scheme.onPrimaryContainer, colors.taskOnBgColors[0])
+    assertEquals(scheme.onErrorContainer, colors.taskOnBgColors[3])
   }
 }
