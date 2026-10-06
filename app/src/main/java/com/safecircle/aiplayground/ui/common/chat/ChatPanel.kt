@@ -369,13 +369,13 @@ fun ChatPanel(
           messages.forEachIndexed { index, message ->
             val imageHistoryCurIndex = remember { mutableIntStateOf(0) }
             var hAlign: Alignment.Horizontal = Alignment.End
-            var backgroundColor: Color = MaterialTheme.customColors.userBubbleBgColor
+            var backgroundColor: Color = MaterialTheme.colorScheme.primary
             var hardCornerAtLeftOrRight = false
             var extraPaddingStart = 48.dp
             var extraPaddingEnd = 0.dp
             if (message.side == ChatSide.AGENT) {
               hAlign = Alignment.Start
-              backgroundColor = MaterialTheme.customColors.agentBubbleBgColor
+              backgroundColor = MaterialTheme.colorScheme.surfaceContainerHigh
               hardCornerAtLeftOrRight = true
               extraPaddingStart = 0.dp
               if (

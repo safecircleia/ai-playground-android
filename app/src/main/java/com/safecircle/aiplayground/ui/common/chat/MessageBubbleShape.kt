@@ -24,6 +24,7 @@ import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.unit.Density
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.LayoutDirection
 
 /**
@@ -36,6 +37,7 @@ import androidx.compose.ui.unit.LayoutDirection
 class MessageBubbleShape(
   private val radius: Dp,
   private val hardCornerAtLeftOrRight: Boolean = false,
+  private val tailRadius: Dp = 6.dp,
 ) : Shape {
   override fun createOutline(
     size: Size,
@@ -43,6 +45,7 @@ class MessageBubbleShape(
     density: Density,
   ): Outline {
     val radiusPx = with(density) { radius.toPx() }
+    val tailPx = with(density) { tailRadius.toPx() }
     val path =
       Path().apply {
         addRoundRect(
@@ -52,11 +55,11 @@ class MessageBubbleShape(
             right = size.width,
             bottom = size.height,
             topLeftCornerRadius =
-              if (hardCornerAtLeftOrRight) CornerRadius(0f, 0f)
+              if (hardCornerAtLeftOrRight) CornerRadius(tailPx, tailPx)
               else CornerRadius(radiusPx, radiusPx),
             topRightCornerRadius =
               if (hardCornerAtLeftOrRight) CornerRadius(radiusPx, radiusPx)
-              else CornerRadius(0f, 0f), // No rounding here
+              else CornerRadius(tailPx, tailPx),
             bottomLeftCornerRadius = CornerRadius(radiusPx, radiusPx),
             bottomRightCornerRadius = CornerRadius(radiusPx, radiusPx),
           )

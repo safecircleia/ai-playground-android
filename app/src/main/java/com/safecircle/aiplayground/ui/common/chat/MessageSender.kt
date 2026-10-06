@@ -72,7 +72,13 @@ fun MessageSender(message: ChatMessage, agentName: String = "", imageHistoryCurI
   ) {
     Row(verticalAlignment = Alignment.CenterVertically) {
       // Sender label.
-      Text(userLabel, style = MaterialTheme.typography.titleSmall)
+      Text(
+        userLabel,
+        style = MaterialTheme.typography.labelLargeEmphasized,
+        color =
+          if (message.side == ChatSide.AGENT) MaterialTheme.colorScheme.primary
+          else MaterialTheme.colorScheme.onSurfaceVariant,
+      )
 
       when (message) {
         // Benchmark running status.

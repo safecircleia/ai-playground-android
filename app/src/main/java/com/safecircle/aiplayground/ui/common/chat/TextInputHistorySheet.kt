@@ -142,7 +142,7 @@ private fun SheetContent(
             Modifier.fillMaxWidth()
               .padding(horizontal = 8.dp, vertical = 2.dp)
               .clip(RoundedCornerShape(24.dp))
-              .background(MaterialTheme.customColors.agentBubbleBgColor)
+              .background(MaterialTheme.colorScheme.surfaceContainerHigh)
               .clickable { onHistoryItemClicked(item) },
           verticalAlignment = Alignment.CenterVertically,
           horizontalArrangement = Arrangement.spacedBy(8.dp),

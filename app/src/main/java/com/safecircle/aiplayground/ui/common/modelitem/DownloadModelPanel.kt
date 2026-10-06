@@ -64,7 +64,6 @@ fun DownloadModelPanel(
   onTryItClicked: () -> Unit,
   tosViewModel: TosViewModel? = null,
   modifier: Modifier = Modifier,
-  downloadButtonBackgroundColor: Color = MaterialTheme.colorScheme.surfaceContainer,
 ) {
   with(sharedTransitionScope) {
     Row(
@@ -146,7 +145,6 @@ fun DownloadModelPanel(
           ),
         modifierWhenExpanded = Modifier.weight(1f),
         tosViewModel = tosViewModel ?: hiltViewModel(),
-        downloadButtonBackgroundColor = downloadButtonBackgroundColor,
       )
     }
   }

@@ -44,7 +44,7 @@ fun MessageBodyInfo(message: ChatMessageInfo, smallFontSize: Boolean = true) {
     Box(
       modifier =
         Modifier.clip(RoundedCornerShape(16.dp))
-          .background(MaterialTheme.customColors.agentBubbleBgColor)
+          .background(MaterialTheme.colorScheme.surfaceContainerHigh)
     ) {
       MarkdownText(
         text = message.content,

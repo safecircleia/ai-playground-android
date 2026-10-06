@@ -48,7 +48,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.IconButtonDefaults
-import androidx.compose.material3.LinearProgressIndicator
+import androidx.compose.material3.LinearWavyProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
@@ -136,7 +136,6 @@ fun DownloadAndTryButton(
   modifierWhenExpanded: Modifier = Modifier,
   compact: Boolean = false,
   canShowTryIt: Boolean = true,
-  downloadButtonBackgroundColor: Color = MaterialTheme.colorScheme.surfaceContainer,
 ) {
   val scope = rememberCoroutineScope()
   val context = LocalContext.current
@@ -346,27 +345,28 @@ fun DownloadAndTryButton(
   }
 
   if (!showDownloadProgress) {
-    var buttonModifier: Modifier = modifier.height(42.dp)
-    if (!compact) {
-      buttonModifier = buttonModifier.then(modifierWhenExpanded)
-    }
+    var buttonModifier: Modifier = modifier.height(56.dp)
+    buttonModifier =
+      if (compact) buttonModifier.width(56.dp) else buttonModifier.then(modifierWhenExpanded)
     Button(
       modifier = buttonModifier,
       colors =
         ButtonDefaults.buttonColors(
           containerColor =
-            if (
+            if (!enabled) {
+              MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f)
+            } else if (
               (!downloadSucceeded || !canShowTryIt) &&
                 model.localFileRelativeDirPathOverride.isEmpty()
             ) {
-              downloadButtonBackgroundColor
+              MaterialTheme.colorScheme.primary
             } else if (task != null) {
-              getTaskBgGradientColors(task = task)[1]
+              getTaskIconColor(task = task)
             } else {
               MaterialTheme.colorScheme.primary
             }
         ),
-      contentPadding = PaddingValues(horizontal = 12.dp),
+      contentPadding = if (compact) PaddingValues(0.dp) else PaddingValues(horizontal = 24.dp),
       onClick = {
         if (!enabled || checkingToken) {
           return@Button
@@ -389,9 +389,9 @@ fun DownloadAndTryButton(
           // Define the color for disabled button.
           MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f)
         } else if (!downloadSucceeded && model.localFileRelativeDirPathOverride.isEmpty()) {
-          MaterialTheme.colorScheme.onSurface
+          MaterialTheme.colorScheme.onPrimary
         } else if (task != null) {
-          Color.White
+          getTaskOnIconColor(task = task)
         } else {
           MaterialTheme.colorScheme.onPrimary
         }
@@ -414,13 +414,13 @@ fun DownloadAndTryButton(
             Text(
               stringResource(R.string.download),
               color = textColor,
-              style = MaterialTheme.typography.titleMedium,
+              style = MaterialTheme.typography.titleMediumEmphasized,
             )
           } else if (canShowTryIt) {
             Text(
               stringResource(R.string.try_it),
               color = textColor,
-              style = MaterialTheme.typography.titleMedium,
+              style = MaterialTheme.typography.titleMediumEmphasized,
               maxLines = 1,
               autoSize =
                 TextAutoSize.StepBased(minFontSize = 8.sp, maxFontSize = 16.sp, stepSize = 1.sp),
@@ -441,15 +441,15 @@ fun DownloadAndTryButton(
     downloadProgressModifier =
       downloadProgressModifier
         .clip(CircleShape)
-        .background(MaterialTheme.colorScheme.surfaceContainer)
+        .background(MaterialTheme.colorScheme.primaryContainer)
         .padding(horizontal = 8.dp)
-        .height(42.dp)
+        .height(56.dp)
     Row(modifier = downloadProgressModifier, verticalAlignment = Alignment.CenterVertically) {
       if (checkingToken) {
         Text(
           stringResource(R.string.checking_access),
           style = MaterialTheme.typography.bodyMedium,
-          color = MaterialTheme.colorScheme.onSurface,
+          color = MaterialTheme.colorScheme.onPrimaryContainer,
           textAlign = TextAlign.Center,
           modifier = if (!compact) Modifier.fillMaxWidth() else Modifier.padding(horizontal = 4.dp),
         )
@@ -461,18 +461,15 @@ fun DownloadAndTryButton(
               // This stops numbers from "jumping around" when being updated.
               fontFeatureSettings = "tnum"
             ),
-          color = MaterialTheme.colorScheme.onSurface,
+          color = MaterialTheme.colorScheme.onPrimaryContainer,
           modifier = Modifier.padding(start = 12.dp).width(if (compact) 32.dp else 44.dp),
         )
         if (!compact) {
-          val color =
-            if (task != null) getTaskBgGradientColors(task = task)[1]
-            else MaterialTheme.colorScheme.primary
-          LinearProgressIndicator(
+          LinearWavyProgressIndicator(
             modifier = Modifier.weight(1f).padding(horizontal = 4.dp),
             progress = { animatedProgress.value },
-            color = color,
-            trackColor = MaterialTheme.colorScheme.surfaceContainerHighest,
+            color = MaterialTheme.colorScheme.primary,
+            trackColor = MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.18f),
           )
         }
         val cbStop = stringResource(R.string.cd_stop_icon)
@@ -483,14 +480,14 @@ fun DownloadAndTryButton(
           },
           colors =
             IconButtonDefaults.iconButtonColors(
-              containerColor = MaterialTheme.colorScheme.surfaceContainer
+              containerColor = MaterialTheme.colorScheme.primary
             ),
           modifier = Modifier.semantics { contentDescription = cbStop },
         ) {
           Icon(
             Icons.Outlined.Close,
             contentDescription = null,
-            tint = MaterialTheme.colorScheme.onSurface,
+            tint = MaterialTheme.colorScheme.onPrimary,
           )
         }
       }

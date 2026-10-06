@@ -17,6 +17,7 @@
 package com.safecircle.aiplayground.ui.common.modelitem
 
 // import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.material.icons.outlined.CloudDownload
 // import com.safecircle.aiplayground.ui.theme.GalleryTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
@@ -54,12 +55,7 @@ fun StatusIcon(
     horizontalArrangement = Arrangement.Center,
     modifier = modifier,
   ) {
-    val color =
-      if (task != null) {
-        getTaskBgGradientColors(task = task)[1]
-      } else {
-        MaterialTheme.colorScheme.primary
-      }
+    val color = MaterialTheme.colorScheme.primary
     if (model.localFileRelativeDirPathOverride.isNotEmpty()) {
       Icon(
         Icons.Filled.DownloadForOffline,
@@ -71,8 +67,8 @@ fun StatusIcon(
       when (downloadStatus?.status) {
         ModelDownloadStatusType.NOT_DOWNLOADED ->
           Icon(
-            Icons.AutoMirrored.Outlined.HelpOutline,
-            tint = MaterialTheme.customColors.modelInfoIconColor,
+            Icons.Outlined.CloudDownload,
+            tint = MaterialTheme.colorScheme.onSecondaryContainer,
             contentDescription = stringResource(R.string.cd_not_downloaded_icon),
             modifier = Modifier.size(MODEL_INFO_ICON_SIZE),
           )
@@ -97,6 +93,7 @@ fun StatusIcon(
         ModelDownloadStatusType.IN_PROGRESS ->
           Icon(
             Icons.Rounded.Downloading,
+            tint = MaterialTheme.colorScheme.onPrimaryContainer,
             contentDescription = stringResource(R.string.cd_downloading_icon),
             modifier = Modifier.size(MODEL_INFO_ICON_SIZE),
           )

@@ -47,8 +47,8 @@ fun MessageBodyText(
       MarkdownText(
         text = message.content,
         modifier = Modifier.padding(vertical = 12.dp).padding(horizontal = horizontalPadding),
-        textColor = Color.White,
-        linkColor = Color.White,
+        textColor = MaterialTheme.colorScheme.onPrimary,
+        linkColor = MaterialTheme.colorScheme.onPrimary,
       )
     }
   } else if (message.side == ChatSide.AGENT) {
