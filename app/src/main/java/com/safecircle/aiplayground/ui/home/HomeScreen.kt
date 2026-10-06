@@ -184,6 +184,7 @@ private fun HomeContent(
       drawerState = drawerState,
       drawerContent = {
         HomeDrawerContent(
+          onHomeClick = { scope.launch { drawerState.close() } },
           onModelsClick = {
             scope.launch {
               drawerState.close()
