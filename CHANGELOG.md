@@ -5,6 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.2.0] - 2026-10-06
+
+### Changed
+- Material 3 Expressive redesign: dynamic color with a SafeCircle fallback, Roboto Flex typography, expressive motion and shape-morphing badges
+- New home screen with a hero card and task tiles; adaptive navigation rail and two-pane layout on tablets
+- Redesigned navigation drawer, Models page and Settings sheet
+- Redesigned model cards with clearer download status and progress
+- Redesigned chat: new message bubbles, input bar, empty state and loading indicators
+- Redesigned Safety Detection screen and result card
+- Simplified chat top bar: back, task icon and model picker on one row, with history and settings buttons
+
 ## [1.1.2] - 2026-10-04
 
 ### Changed
