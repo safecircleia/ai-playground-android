@@ -41,8 +41,8 @@ fun TaskIcon(
 ) {
   ShapeBadge(
     index = task.index,
-    containerColor = getTaskBgColor(task),
-    contentColor = getTaskOnBgColor(task),
+    containerColor = getTaskIconColor(task),
+    contentColor = getTaskOnIconColor(task),
     size = width,
     modifier =
       modifier.graphicsLayer {

@@ -123,15 +123,11 @@ private val darkScheme =
 
 @Immutable
 data class CustomColors(
-  val appTitleGradientColors: List<Color> = listOf(),
-  val tabHeaderBgColor: Color = Color.Transparent,
   val taskCardBgColor: Color = Color.Transparent,
   val taskBgColors: List<Color> = listOf(),
-  val taskOnBgColors: List<Color> = listOf(),
+  val taskOnIconColors: List<Color> = listOf(),
   val taskBgGradientColors: List<List<Color>> = listOf(),
   val taskIconColors: List<Color> = listOf(),
-  val taskIconShapeBgColor: Color = Color.Transparent,
-  val homeBottomGradient: List<Color> = listOf(),
   val userBubbleBgColor: Color = Color.Transparent,
   val agentBubbleBgColor: Color = Color.Transparent,
   val linkColor: Color = Color.Transparent,
@@ -145,7 +141,6 @@ data class CustomColors(
   val errorTextColor: Color = Color.Transparent,
   val newFeatureContainerColor: Color = Color.Transparent,
   val newFeatureTextColor: Color = Color.Transparent,
-  val bgStarColor: Color = Color.Transparent,
   val promoBannerBgBrush: Brush = Brush.verticalGradient(listOf(Color.Transparent)),
   val promoBannerIconBgBrush: Brush = Brush.verticalGradient(listOf(Color.Transparent)),
   val experimentalGradientColors: List<Color> = listOf(Color.Transparent),
@@ -155,10 +150,6 @@ val LocalCustomColors = staticCompositionLocalOf { CustomColors() }
 
 val lightCustomColors =
   CustomColors(
-    appTitleGradientColors = listOf(Color(0xFF85B1F8), Color(0xFF3174F1)),
-    tabHeaderBgColor = Color(0xFF3174F1),
-    taskIconShapeBgColor = Color.White,
-    homeBottomGradient = listOf(Color(0x00F8F9FF), Color(0xffFFEFC9)),
     agentBubbleBgColor = Color(0xFFe9eef6),
     userBubbleBgColor = Color(0xFF32628D),
     linkColor = Color(0xFF32628D),
@@ -172,7 +163,6 @@ val lightCustomColors =
     errorTextColor = Color(0xffd93025),
     newFeatureContainerColor = Color(0xFFEEDCFE),
     newFeatureTextColor = Color(0xFF400B84),
-    bgStarColor = Color(0x3A669AF5),
     promoBannerBgBrush =
       Brush.linearGradient(
         colorStops =
@@ -204,10 +194,6 @@ val lightCustomColors =
 
 val darkCustomColors =
   CustomColors(
-    appTitleGradientColors = listOf(Color(0xFF85B1F8), Color(0xFF3174F1)),
-    tabHeaderBgColor = Color(0xFF3174F1),
-    taskIconShapeBgColor = Color(0xFF202124),
-    homeBottomGradient = listOf(Color(0x00F8F9FF), Color(0x1AF6AD01)),
     agentBubbleBgColor = Color(0xFF1b1c1d),
     userBubbleBgColor = Color(0xFF1f3760),
     linkColor = Color(0xFF9DCAFC),
@@ -221,7 +207,6 @@ val darkCustomColors =
     errorTextColor = Color(0xffee675c),
     newFeatureContainerColor = Color(0xFFEEDCFE),
     newFeatureTextColor = Color(0xFF400B84),
-    bgStarColor = Color(0x19346BF0),
     promoBannerBgBrush =
       Brush.linearGradient(
         colorStops = arrayOf(0.0f to Color(0x82183570), 0.8077f to Color(0x820A122D)),
@@ -257,7 +242,7 @@ private const val GRADIENT_END_BLEND = 0.3f
 fun CustomColors.withTaskPalette(scheme: ColorScheme): CustomColors {
   val accents = listOf(scheme.primary, scheme.tertiary, scheme.secondary, scheme.error)
   return copy(
-    taskCardBgColor = scheme.surfaceContainerLow,
+    taskCardBgColor = scheme.surfaceContainer,
     taskBgColors =
       listOf(
         scheme.primaryContainer,
@@ -265,12 +250,12 @@ fun CustomColors.withTaskPalette(scheme: ColorScheme): CustomColors {
         scheme.secondaryContainer,
         scheme.errorContainer,
       ),
-    taskOnBgColors =
+    taskOnIconColors =
       listOf(
-        scheme.onPrimaryContainer,
-        scheme.onTertiaryContainer,
-        scheme.onSecondaryContainer,
-        scheme.onErrorContainer,
+        scheme.onPrimary,
+        scheme.onTertiary,
+        scheme.onSecondary,
+        scheme.onError,
       ),
     taskBgGradientColors = accents.map { listOf(it, lerp(it, scheme.surface, GRADIENT_END_BLEND)) },
     taskIconColors = accents,

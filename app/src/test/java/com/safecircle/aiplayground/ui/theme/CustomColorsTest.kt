@@ -13,7 +13,7 @@ class CustomColorsTest {
     for (scheme in listOf(lightColorScheme(), darkColorScheme())) {
       val colors = CustomColors().withTaskPalette(scheme)
       assertEquals(4, colors.taskBgColors.size)
-      assertEquals(4, colors.taskOnBgColors.size)
+      assertEquals(4, colors.taskOnIconColors.size)
       assertEquals(4, colors.taskIconColors.size)
       assertEquals(4, colors.taskBgGradientColors.size)
       colors.taskBgGradientColors.forEach { assertEquals(2, it.size) }
@@ -23,10 +23,12 @@ class CustomColorsTest {
   @Test
   fun paletteFollowsSchemeRoles() {
     val container = Color(0xFF123456)
-    val scheme = lightColorScheme(primaryContainer = container, onPrimaryContainer = Color.White)
+    val scheme = lightColorScheme(primaryContainer = container, onPrimary = Color.White)
     val colors = CustomColors().withTaskPalette(scheme)
     assertEquals(container, colors.taskBgColors[0])
-    assertEquals(Color.White, colors.taskOnBgColors[0])
     assertEquals(scheme.primary, colors.taskIconColors[0])
+    // Badge glyphs sit on the accent colour, so they must use its "on" pair for contrast.
+    assertEquals(Color.White, colors.taskOnIconColors[0])
+    assertEquals(scheme.onError, colors.taskOnIconColors[3])
   }
 }

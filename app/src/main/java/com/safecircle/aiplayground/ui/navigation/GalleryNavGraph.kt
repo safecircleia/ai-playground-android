@@ -202,8 +202,6 @@ fun GalleryNavHost(
             logEvent(GalleryEvent.CAPABILITY_SELECT, mapOf("capability_name" to task.id))
           },
           onModelsClicked = { navController.navigate(ROUTE_MODEL_MANAGER) },
-          onNotificationsClicked = { navController.navigate(ROUTE_NOTIFICATIONS) },
-          gm4 = false,
         )
       }
     }
