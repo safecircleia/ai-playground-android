@@ -103,3 +103,32 @@ Rollout
 - Branch `feat/m3-expressive-foundation-shell`, small commits in order: theme and
   tokens, shared components, home, transitions, adaptive layout.
 - No release or version bump unless requested.
+
+## Plan-time adjustments (2026-10-06)
+
+Found while checking the spec against the code and the resolved dependencies. These
+override the text above.
+
+- **Material3 version.** The project resolves `material3` to `1.4.0` (BOM pin). That
+  version has no `MaterialShapes`, `LoadingIndicator`, `ButtonGroup`, `ToggleButton` or
+  public `MotionScheme.expressive()`. The plan moves `material3` to `1.5.0-alpha27`
+  (already in the Gradle cache). This is an alpha dependency in a shipped app; Task 1 is
+  a go/no-go compile spike. Fallback is 1.4.0 with no shape presets or loading
+  indicator, which needs a re-plan.
+- **Typeface.** The app uses Nunito, not Roboto Flex. It stays.
+- **Shape scale bug.** Existing `RoundedCornerShape(4)` etc. are percent corners.
+  They become dp corners app-wide, so out-of-scope screens change slightly.
+- **Dropped (no consumer in this cycle):** `LocalMotion` helper (use
+  `MaterialTheme.motionScheme`), `ButtonGroup`/connected buttons, `ExpressiveTopBar`
+  wrapper (home uses `LargeFlexibleTopAppBar` directly), icon press-morph (spring press
+  scale instead), two-column card grid, drawer item descriptions.
+- **Banners are not on Home.** The Vigil banner lives on the Models page (next cycle);
+  `NewReleaseNotification` is unused. Nothing to animate on Home for this.
+- **Rail destinations:** Home, Models, Settings. Notifications has no entry point today
+  (`onNotificationsClicked` was never used), so it is not added.
+- **Breakpoints:** rail at >= 600dp (medium); list-detail at >= 840dp (expanded), per
+  Material window size classes. The rail appears on the Home route only.
+- **Dead code removed:** the `gm4` home variant (only ever called with `false`),
+  `SquareDrawerItem`, unused `CustomColors` fields.
+- **`configChanges`** extended on `MainActivity` so resize/fold/rotate does not recreate
+  the activity (it discards saved state and would dump users back on Home).
