@@ -16,6 +16,7 @@
 
 package com.safecircle.aiplayground.ui.common.chat
 
+import androidx.compose.material3.LoadingIndicator
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.core.LinearEasing
 import androidx.compose.animation.core.RepeatMode
@@ -68,7 +69,7 @@ fun MessageBodyLoading(message: ChatMessageLoading? = null) {
     verticalAlignment = Alignment.CenterVertically,
     modifier = Modifier.fillMaxWidth(),
   ) {
-    RotationalLoader(size = 24.dp)
+    LoadingIndicator(modifier = Modifier.size(40.dp))
 
     if (message?.extraProgressLabel?.isNotEmpty() == true) {
       AnimatedContent(

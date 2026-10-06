@@ -16,6 +16,7 @@
 
 package com.safecircle.aiplayground.ui.common.chat
 
+import androidx.compose.material3.LoadingIndicator
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
@@ -658,7 +659,7 @@ fun ChatPanel(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.spacedBy(8.dp),
               ) {
-                RotationalLoader(size = 32.dp)
+                LoadingIndicator(modifier = Modifier.size(64.dp))
                 Text(
                   stringResource(R.string.aichat_initializing_title),
                   style =
