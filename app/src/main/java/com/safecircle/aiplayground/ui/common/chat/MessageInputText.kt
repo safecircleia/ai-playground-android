@@ -16,6 +16,7 @@
 
 package com.safecircle.aiplayground.ui.common.chat
 
+import androidx.compose.material3.FilledTonalIconButton
 import android.Manifest
 import android.content.Context
 import android.content.Intent
@@ -371,7 +372,8 @@ fun MessageInputText(
               modifier =
                 Modifier.padding(horizontal = 12.dp)
                   .padding(vertical = 8.dp)
-                  .border(1.dp, MaterialTheme.colorScheme.outlineVariant, RoundedCornerShape(16.dp))
+                  .clip(MaterialTheme.shapes.extraLarge)
+                  .background(MaterialTheme.colorScheme.surfaceContainerHigh)
             ) {
               // First row: text field for input.
               Row(
@@ -414,24 +416,9 @@ fun MessageInputText(
                   // A plus button to show a popup menu to add stuff to the chat.
                   Box() {
                     val enableAddButton = !inProgress && !isResettingSession && !modelInitializing
-                    OutlinedIconButton(
+                    FilledTonalIconButton(
                       enabled = enableAddButton,
                       onClick = { showAddContentMenu = true },
-                      colors =
-                        IconButtonDefaults.iconButtonColors(
-                          disabledContentColor =
-                            MaterialTheme.colorScheme.onSurface.copy(alpha = 0.2f)
-                        ),
-                      border =
-                        IconButtonDefaults.outlinedIconButtonBorder(true)
-                          .copy(
-                            brush =
-                              SolidColor(
-                                MaterialTheme.colorScheme.outlineVariant.copy(
-                                  alpha = if (enableAddButton) 1f else 0.1f
-                                )
-                              )
-                          ),
                     ) {
                       Icon(
                         Icons.Outlined.Add,
@@ -705,15 +692,18 @@ fun MessageInputText(
                     },
                     colors =
                       IconButtonDefaults.iconButtonColors(
-                        containerColor = getTaskIconColor(task = task),
-                        disabledContainerColor = getTaskIconColor(task = task).copy(alpha = 0.3f),
+                        containerColor = MaterialTheme.colorScheme.primary,
+                        contentColor = MaterialTheme.colorScheme.onPrimary,
+                        disabledContainerColor =
+                          MaterialTheme.colorScheme.onSurface.copy(alpha = 0.12f),
+                        disabledContentColor =
+                          MaterialTheme.colorScheme.onSurface.copy(alpha = 0.38f),
                       ),
                   ) {
                     Icon(
                       Icons.AutoMirrored.Rounded.Send,
                       contentDescription = stringResource(R.string.cd_send_prompt_icon),
                       modifier = Modifier.offset(x = 2.dp),
-                      tint = Color.White,
                     )
                   }
                 }

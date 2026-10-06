@@ -58,9 +58,10 @@
         android:theme="@style/Theme.Gallery"
         tools:targetApi="31">
         <!--
-          android:configChanges="uiMode" tells the system don't destroy and
-          recreate the activity when UI mode changes (e.g. setting dark mode).
-          Instead, just recompose the view.
+          android:configChanges tells the system don't destroy and recreate the activity
+          when UI mode changes (e.g. setting dark mode) or the window is resized, folded or
+          rotated. Instead, just recompose the view, so the selected task and navigation state
+          survive (MainActivity discards saved state, so a recreation would drop users on Home).
          -->
         <activity
             android:name="com.safecircle.aiplayground.MainActivity"
@@ -68,7 +69,7 @@
             android:theme="@style/Theme.Gallery.SplashScreen"
             android:screenOrientation="portrait"
             android:windowSoftInputMode="adjustResize"
-            android:configChanges="uiMode"
+            android:configChanges="uiMode|orientation|screenSize|smallestScreenSize|screenLayout|density"
             tools:ignore="DiscouragedApi,LockedOrientationActivity">
             <!-- This is for putting the app into launcher -->
             <intent-filter>

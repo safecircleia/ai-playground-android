@@ -16,6 +16,9 @@
 
 package com.safecircle.aiplayground.ui.llmchat
 
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.Spacer
+import com.safecircle.aiplayground.ui.common.TaskIcon
 import android.content.Context
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -132,7 +135,13 @@ class LlmChatTask @Inject constructor() : CustomTask {
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.spacedBy(12.dp),
           ) {
-            Text(stringResource(R.string.aichat_emptystate_title), style = emptyStateTitle)
+            TaskIcon(task = task, width = 96.dp)
+            Spacer(modifier = Modifier.height(4.dp))
+            Text(
+              stringResource(R.string.aichat_emptystate_title),
+              style = emptyStateTitle,
+              textAlign = TextAlign.Center,
+            )
             Text(
               stringResource(R.string.aichat_emptystate_content),
               style = emptyStateContent,

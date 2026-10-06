@@ -93,6 +93,9 @@
   <string name="drawer_settings_description" translatable="true">Manage application settings</string>
   <string name="drawer_models_label" translatable="true">Models</string>
   <string name="drawer_models_description" translatable="true">Browse, try, and benchmark models</string>
+  <string name="model_license_chip_label" translatable="true">Model license</string>
+  <string name="home_label" translatable="true">Home</string>
+  <string name="home_select_task_hint" translatable="true">Select a use case to see its models</string>
   <string name="drawer_notifications_label" translatable="true">Notifications</string>
   <string name="drawer_notifications_description" translatable="true">View scheduled notifications</string>
   <string name="notifications_title" translatable="true">Notifications</string>

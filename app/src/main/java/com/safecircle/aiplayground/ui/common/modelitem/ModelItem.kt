@@ -16,6 +16,11 @@
 
 package com.safecircle.aiplayground.ui.common.modelitem
 
+import com.safecircle.aiplayground.ui.common.expressive.ShapeBadge
+import androidx.compose.material3.Surface
+import androidx.compose.material.icons.rounded.Memory
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.layout.size
 import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.animation.SharedTransitionLayout
@@ -111,7 +116,7 @@ fun ModelItem(
   var boxModifier =
     modifier
       .fillMaxWidth()
-      .clip(RoundedCornerShape(size = 12.dp))
+      .clip(MaterialTheme.shapes.extraLargeIncreased)
       .background(color = MaterialTheme.customColors.taskCardBgColor)
   boxModifier =
     if (canExpand) {
@@ -132,21 +137,23 @@ fun ModelItem(
     }
 
   Box(modifier = boxModifier) {
-    Column(modifier = Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-      Box(
-        modifier = Modifier.semantics { isTraversalGroup = true },
-        contentAlignment = Alignment.CenterStart,
+    Column(modifier = Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+      Row(
+        modifier = Modifier.fillMaxWidth().semantics { isTraversalGroup = true },
+        horizontalArrangement = Arrangement.spacedBy(16.dp),
+        verticalAlignment = Alignment.Top,
       ) {
+        ModelBadge(model = model, task = task)
         ModelNameAndStatus(
           model = model,
           task = task,
           downloadStatus = downloadStatus,
           isExpanded = isExpanded,
-          modifier = Modifier.fillMaxWidth(),
+          modifier = Modifier.weight(1f),
           showModelSizeAndDownloadProgressLabel = modelVariants.isEmpty(),
         )
-        // Model action menu (benchmark, delete), and button to expand/collapse button at the right.
-        Row(verticalAlignment = Alignment.Top, modifier = Modifier.align(Alignment.TopEnd)) {
+        // Model action menu (benchmark, delete), and the expand/collapse control at the right.
+        Row(verticalAlignment = Alignment.CenterVertically) {
           val isWebImport = model.imported && model.url.isNotEmpty()
           if (
             modelVariants.isEmpty() &&
@@ -160,19 +167,26 @@ fun ModelItem(
               showDeleteButton =
                 showDeleteButton && model.localFileRelativeDirPathOverride.isEmpty() && !isAicore,
               onBenchmarkClicked = { onBenchmarkClicked(model) },
-              modifier = Modifier.offset(y = (-12).dp),
             )
           }
           if (!model.imported) {
-            Icon(
-              if (isExpanded) Icons.Rounded.UnfoldLess else Icons.Rounded.UnfoldMore,
-              contentDescription =
-                stringResource(
-                  if (isExpanded) R.string.cd_collapse_icon else R.string.cd_expand_icon
-                ),
-              tint = MaterialTheme.colorScheme.onSurfaceVariant,
-              modifier = Modifier.alpha(0.6f),
-            )
+            Surface(
+              shape = CircleShape,
+              color = MaterialTheme.colorScheme.secondaryContainer,
+              modifier = Modifier.size(36.dp),
+            ) {
+              Box(contentAlignment = Alignment.Center) {
+                Icon(
+                  if (isExpanded) Icons.Rounded.UnfoldLess else Icons.Rounded.UnfoldMore,
+                  contentDescription =
+                    stringResource(
+                      if (isExpanded) R.string.cd_collapse_icon else R.string.cd_expand_icon
+                    ),
+                  tint = MaterialTheme.colorScheme.onSecondaryContainer,
+                  modifier = Modifier.size(20.dp),
+                )
+              }
+            }
           }
         }
       }
@@ -291,7 +305,6 @@ fun ModelItem(
                     modelManagerViewModel = modelManagerViewModel,
                     isExpanded = targetIsExpanded,
                     onTryItClicked = { onModelClicked(variantModel) },
-                    downloadButtonBackgroundColor = MaterialTheme.colorScheme.surfaceContainerHigh,
                   )
                 }
 
@@ -302,9 +315,9 @@ fun ModelItem(
                         rememberSharedContentState(key = "variant_container_${variantModel.name}"),
                       animatedVisibilityScope = this,
                     )
-                    .clip(RoundedCornerShape(12.dp))
-                    .background(MaterialTheme.colorScheme.surfaceContainerLow)
-                    .padding(vertical = 12.dp, horizontal = 16.dp)
+                    .clip(MaterialTheme.shapes.large)
+                    .background(MaterialTheme.colorScheme.surfaceContainerHigh)
+                    .padding(vertical = 14.dp, horizontal = 16.dp)
 
                 if (targetShowColumnLayout) {
                   Column(modifier = containerModifier) {
@@ -404,6 +417,22 @@ fun ModelVariantHeader(
         modifier = menuModifier.offset(y = (-12).dp),
       )
     }
+  }
+}
+
+/** Leading expressive-shape badge for a model card, coloured from the task palette. */
+@Composable
+private fun ModelBadge(model: Model, task: Task?) {
+  val colors = MaterialTheme.customColors
+  val shapeIndex = kotlin.math.abs(model.name.hashCode())
+  val slot = (task?.index?.coerceAtLeast(0) ?: shapeIndex) % colors.taskIconColors.size
+  ShapeBadge(
+    index = shapeIndex,
+    containerColor = colors.taskIconColors[slot],
+    contentColor = colors.taskOnIconColors[slot],
+    size = 56.dp,
+  ) {
+    Icon(Icons.Rounded.Memory, contentDescription = null, modifier = Modifier.size(28.dp))
   }
 }
 

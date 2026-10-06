@@ -16,6 +16,15 @@
 
 package com.safecircle.aiplayground.ui.common.modelitem
 
+import androidx.compose.ui.text.font.FontWeight
+import com.safecircle.aiplayground.logEvent
+import com.safecircle.aiplayground.GalleryEvent
+import androidx.compose.ui.platform.LocalUriHandler
+import androidx.compose.material3.Surface
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.animation.ExperimentalSharedTransitionApi
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -67,7 +76,7 @@ import com.safecircle.aiplayground.ui.theme.labelSmallNarrow
  * - "Unzipping..." status for unzipping processes.
  * - Model size for successful downloads.
  */
-@OptIn(ExperimentalSharedTransitionApi::class)
+@OptIn(ExperimentalSharedTransitionApi::class, ExperimentalLayoutApi::class)
 @Composable
 fun ModelNameAndStatus(
   model: Model,
@@ -145,60 +154,115 @@ fun ModelNameAndStatus(
       )
     }
 
-    // Model name and action buttons.
+    // Model name.
     Text(
       model.displayName.ifEmpty { model.name },
-      maxLines = 1,
-      overflow = TextOverflow.MiddleEllipsis,
-      style = MaterialTheme.typography.titleMedium,
-      modifier = Modifier.padding(end = 64.dp),
+      maxLines = 2,
+      overflow = TextOverflow.Ellipsis,
+      style = MaterialTheme.typography.titleLargeEmphasized,
+      fontWeight = FontWeight.SemiBold,
     )
 
-    // Version label: show local version, and remote if update available.
-    if (model.version.isNotEmpty()) {
-      val isDownloaded = downloadStatus?.status == ModelDownloadStatusType.SUCCEEDED
-      val versionText = if (model.updatable && model.latestModelFile != null) {
-        "v${model.version} → v${model.latestModelFile!!.commitHash} available"
-      } else if (isDownloaded) {
-        "v${model.version}"
-      } else {
-        "v${model.version}"
+    // Info chips: version, size / download status, and a link to the model license.
+    val status = downloadStatus?.status
+    val statusActive =
+      status == ModelDownloadStatusType.IN_PROGRESS ||
+        status == ModelDownloadStatusType.PARTIALLY_DOWNLOADED ||
+        status == ModelDownloadStatusType.UNZIPPING
+    FlowRow(
+      modifier = Modifier.padding(top = 10.dp),
+      horizontalArrangement = Arrangement.spacedBy(8.dp),
+      verticalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
+      if (model.version.isNotEmpty()) {
+        val versionText =
+          if (model.updatable && model.latestModelFile != null) {
+            "v${model.version} → v${model.latestModelFile!!.commitHash} available"
+          } else {
+            "v${model.version}"
+          }
+        InfoChip(
+          containerColor =
+            if (model.updatable) MaterialTheme.colorScheme.primaryContainer
+            else MaterialTheme.colorScheme.secondaryContainer
+        ) {
+          Text(
+            versionText,
+            style = MaterialTheme.typography.labelLargeEmphasized,
+            color =
+              if (model.updatable) MaterialTheme.colorScheme.onPrimaryContainer
+              else MaterialTheme.colorScheme.onSecondaryContainer,
+          )
+        }
       }
+
+      if (model.runtimeType != RuntimeType.AICORE && showModelSizeAndDownloadProgressLabel) {
+        val failed = status == ModelDownloadStatusType.FAILED
+        InfoChip(
+          containerColor =
+            when {
+              failed -> MaterialTheme.colorScheme.errorContainer
+              statusActive -> MaterialTheme.colorScheme.primaryContainer
+              else -> MaterialTheme.colorScheme.secondaryContainer
+            }
+        ) {
+          ModelStatusDetails(
+            model = model,
+            task = task,
+            downloadStatus = downloadStatus,
+            isExpanded = false,
+            contentColor =
+              if (statusActive) MaterialTheme.colorScheme.onPrimaryContainer
+              else MaterialTheme.colorScheme.onSecondaryContainer,
+          )
+        }
+      }
+
+      if (!model.imported && model.learnMoreUrl.isNotEmpty()) {
+        LearnMoreChip(model.learnMoreUrl)
+      }
+    }
+  }
+}
+
+@Composable
+private fun InfoChip(containerColor: Color, content: @Composable () -> Unit) {
+  Surface(shape = CircleShape, color = containerColor) {
+    Box(modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)) { content() }
+  }
+}
+
+@Composable
+private fun LearnMoreChip(url: String) {
+  val uriHandler = LocalUriHandler.current
+  Surface(
+    shape = CircleShape,
+    color = MaterialTheme.colorScheme.tertiaryContainer,
+    onClick = {
+      uriHandler.openUri(url)
+      logEvent(
+        GalleryEvent.BUTTON_CLICKED,
+        mapOf("event_type" to "resource_link_click", "link_destination" to url),
+      )
+    },
+  ) {
+    Row(
+      modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
+      verticalAlignment = Alignment.CenterVertically,
+      horizontalArrangement = Arrangement.spacedBy(6.dp),
+    ) {
+      Icon(
+        Icons.AutoMirrored.Outlined.OpenInNew,
+        contentDescription = null,
+        tint = MaterialTheme.colorScheme.onTertiaryContainer,
+        modifier = Modifier.size(MODEL_INFO_ICON_SIZE),
+      )
       Text(
-        versionText,
-        style = MaterialTheme.typography.labelSmall,
-        color = if (model.updatable) MaterialTheme.colorScheme.primary
-                else MaterialTheme.colorScheme.onSurfaceVariant,
-        modifier = Modifier.padding(top = 2.dp).alpha(0.7f),
+        stringResource(R.string.model_license_chip_label),
+        style = MaterialTheme.typography.labelLargeEmphasized,
+        maxLines = 1,
+        color = MaterialTheme.colorScheme.onTertiaryContainer,
       )
-    }
-
-    // Status icon + size + download progress details.
-    if (model.runtimeType != RuntimeType.AICORE && showModelSizeAndDownloadProgressLabel) {
-      ModelStatusDetails(
-        model = model,
-        task = task,
-        downloadStatus = downloadStatus,
-        isExpanded = isExpanded,
-        modifier = Modifier.padding(top = 4.dp),
-      )
-    }
-
-    // Learn more url.
-    if (!model.imported && model.learnMoreUrl.isNotEmpty()) {
-      Row(verticalAlignment = Alignment.CenterVertically) {
-        Icon(
-          Icons.AutoMirrored.Outlined.OpenInNew,
-          tint = MaterialTheme.customColors.modelInfoIconColor,
-          contentDescription = null,
-          modifier = Modifier.size(MODEL_INFO_ICON_SIZE).offset(y = 1.dp),
-        )
-        ClickableLink(
-          model.learnMoreUrl,
-          linkText = stringResource(R.string.learn_more),
-          textAlign = TextAlign.Left,
-        )
-      }
     }
   }
 }
@@ -210,6 +274,7 @@ fun ModelStatusDetails(
   downloadStatus: ModelDownloadStatus?,
   isExpanded: Boolean,
   modifier: Modifier = Modifier,
+  contentColor: Color = MaterialTheme.colorScheme.onSurfaceVariant,
 ) {
   val inProgress = downloadStatus?.status == ModelDownloadStatusType.IN_PROGRESS
   val isPartiallyDownloaded = downloadStatus?.status == ModelDownloadStatusType.PARTIALLY_DOWNLOADED
@@ -280,7 +345,7 @@ fun ModelStatusDetails(
         for ((index, line) in sizeLabel.split("\n").withIndex()) {
           Text(
             line,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
+            color = contentColor,
             maxLines = 1,
             style =
               MaterialTheme.typography.bodyMedium.copy(

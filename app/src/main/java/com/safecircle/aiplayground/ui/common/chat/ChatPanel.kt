@@ -16,6 +16,7 @@
 
 package com.safecircle.aiplayground.ui.common.chat
 
+import androidx.compose.material3.LoadingIndicator
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
@@ -369,13 +370,13 @@ fun ChatPanel(
           messages.forEachIndexed { index, message ->
             val imageHistoryCurIndex = remember { mutableIntStateOf(0) }
             var hAlign: Alignment.Horizontal = Alignment.End
-            var backgroundColor: Color = MaterialTheme.customColors.userBubbleBgColor
+            var backgroundColor: Color = MaterialTheme.colorScheme.primary
             var hardCornerAtLeftOrRight = false
             var extraPaddingStart = 48.dp
             var extraPaddingEnd = 0.dp
             if (message.side == ChatSide.AGENT) {
               hAlign = Alignment.Start
-              backgroundColor = MaterialTheme.customColors.agentBubbleBgColor
+              backgroundColor = MaterialTheme.colorScheme.surfaceContainerHigh
               hardCornerAtLeftOrRight = true
               extraPaddingStart = 0.dp
               if (
@@ -658,7 +659,7 @@ fun ChatPanel(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.spacedBy(8.dp),
               ) {
-                RotationalLoader(size = 32.dp)
+                LoadingIndicator(modifier = Modifier.size(64.dp))
                 Text(
                   stringResource(R.string.aichat_initializing_title),
                   style =

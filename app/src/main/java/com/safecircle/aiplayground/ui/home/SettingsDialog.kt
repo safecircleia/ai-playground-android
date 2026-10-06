@@ -16,30 +16,39 @@
 
 package com.safecircle.aiplayground.ui.home
 
-import com.google.android.gms.oss.licenses.OssLicensesMenuActivity
 import android.app.UiModeManager
 import android.content.Context
 import android.content.Intent
 import androidx.compose.foundation.clickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Button
-import androidx.compose.material3.Card
-import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.rounded.OpenInNew
+import androidx.compose.material.icons.rounded.BugReport
+import androidx.compose.material.icons.rounded.Code
+import androidx.compose.material.icons.rounded.Description
+import androidx.compose.material.icons.rounded.Gavel
+import androidx.compose.material.icons.rounded.Settings
+import androidx.compose.material.icons.rounded.ChevronRight
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.SegmentedButton
 import androidx.compose.material3.SegmentedButtonDefaults
 import androidx.compose.material3.SingleChoiceSegmentedButtonRow
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -48,27 +57,32 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.window.Dialog
-import androidx.compose.material3.Switch
+import com.google.android.gms.oss.licenses.OssLicensesMenuActivity
 import com.safecircle.aiplayground.BuildConfig
+import com.safecircle.aiplayground.GalleryEvent
 import com.safecircle.aiplayground.R
 import com.safecircle.aiplayground.data.DebugSettings
+import com.safecircle.aiplayground.logEvent
 import com.safecircle.aiplayground.proto.Theme
-import com.safecircle.aiplayground.ui.common.ClickableLink
+import com.safecircle.aiplayground.ui.common.expressive.ShapeBadge
 import com.safecircle.aiplayground.ui.common.tos.AppTosDialog
 import com.safecircle.aiplayground.ui.modelmanager.ModelManagerViewModel
 import com.safecircle.aiplayground.ui.theme.ThemeSettings
-import com.safecircle.aiplayground.ui.theme.labelSmallNarrow
+import com.safecircle.aiplayground.ui.theme.heroFontFamily
 
-private val THEME_OPTIONS = listOf(Theme.THEME_AUTO, Theme.THEME_LIGHT, Theme.THEME_DARK, Theme.THEME_AMOLED)
+private val THEME_OPTIONS =
+  listOf(Theme.THEME_AUTO, Theme.THEME_LIGHT, Theme.THEME_DARK, Theme.THEME_AMOLED)
+private const val MODEL_LICENSE_URL = "https://safecircle.tech/licenses/research"
+private val ROW_ICON_SIZE = 40.dp
 
-@OptIn(ExperimentalMaterial3Api::class)
+/** App settings, shown as a bottom sheet with grouped sections. */
 @Composable
 fun SettingsDialog(
   curThemeOverride: Theme,
@@ -76,155 +90,120 @@ fun SettingsDialog(
   onDismissed: () -> Unit,
 ) {
   var selectedTheme by remember { mutableStateOf(curThemeOverride) }
-  val interactionSource = remember { MutableInteractionSource() }
   var showTos by remember { mutableStateOf(false) }
   val context = LocalContext.current
+  val uriHandler = LocalUriHandler.current
   val showRawOutput by DebugSettings.showRawOutput.collectAsState()
 
-  Dialog(onDismissRequest = onDismissed) {
-    val focusManager = LocalFocusManager.current
-    Card(
+  ModalBottomSheet(
+    onDismissRequest = onDismissed,
+    sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true),
+    containerColor = MaterialTheme.colorScheme.surfaceContainerLow,
+  ) {
+    Column(
       modifier =
-        Modifier.fillMaxWidth().clickable(
-          interactionSource = interactionSource,
-          indication = null, // Disable the ripple effect
-        ) {
-          focusManager.clearFocus()
-        },
-      shape = RoundedCornerShape(16.dp),
+        Modifier.fillMaxWidth()
+          .verticalScroll(rememberScrollState())
+          .padding(horizontal = 20.dp)
+          .padding(bottom = 24.dp),
+      verticalArrangement = Arrangement.spacedBy(20.dp),
     ) {
-      Column(
-        modifier = Modifier.padding(20.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp),
-      ) {
-        // Dialog title and subtitle.
-        Column {
-          Text(
-            "Settings",
-            style = MaterialTheme.typography.titleLarge,
-            modifier = Modifier.padding(bottom = 8.dp),
-          )
-          // Subtitle.
-          Text(
-            "App version: ${BuildConfig.VERSION_NAME} (${BuildConfig.VERSION_CODE})",
-            style = labelSmallNarrow,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.offset(y = (-6).dp),
-          )
-        }
+      SettingsHeader()
 
+      SettingsSection("Appearance") {
         Column(
-          modifier = Modifier.verticalScroll(rememberScrollState()).weight(1f, fill = false),
-          verticalArrangement = Arrangement.spacedBy(16.dp),
+          modifier =
+            Modifier.fillMaxWidth().padding(16.dp).semantics(mergeDescendants = true) {},
+          verticalArrangement = Arrangement.spacedBy(12.dp),
         ) {
-          // Theme switcher.
-          Column(modifier = Modifier.fillMaxWidth().semantics(mergeDescendants = true) {}) {
-            Text(
-              "Theme",
-              style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Medium),
-            )
-            SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {
-              THEME_OPTIONS.forEachIndexed { index, theme ->
-                SegmentedButton(
-                  shape =
-                    SegmentedButtonDefaults.itemShape(index = index, count = THEME_OPTIONS.size),
-                  onClick = {
-                    selectedTheme = theme
-                    ThemeSettings.themeOverride.value = theme
-                    modelManagerViewModel.saveThemeOverride(theme)
-                    val uiModeManager =
-                      context.applicationContext.getSystemService(Context.UI_MODE_SERVICE)
-                        as UiModeManager
-                    when (theme) {
-                      Theme.THEME_AUTO -> uiModeManager.setApplicationNightMode(UiModeManager.MODE_NIGHT_AUTO)
-                      Theme.THEME_LIGHT -> uiModeManager.setApplicationNightMode(UiModeManager.MODE_NIGHT_NO)
-                      else -> uiModeManager.setApplicationNightMode(UiModeManager.MODE_NIGHT_YES)
-                    }
-                  },
-                  selected = theme == selectedTheme,
-                  icon = {},
-                  label = {
-                    Text(
-                      themeLabel(theme),
-                      style = MaterialTheme.typography.labelSmall,
-                      maxLines = 1,
-                    )
-                  },
-                )
-              }
-            }
-          }
-
-          // Third party licenses.
-          Column(modifier = Modifier.fillMaxWidth().semantics(mergeDescendants = true) {}) {
-            Text(
-              "Third-party libraries",
-              style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Medium),
-            )
-            OutlinedButton(
-              onClick = {
-                // Create an Intent to launch a license viewer that displays a list of
-                // third-party library names. Clicking a name will show its license content.
-                val intent = Intent(context, OssLicensesMenuActivity::class.java)
-                context.startActivity(intent)
-              }
-            ) {
-              Text("View licenses")
-            }
-          }
-
-          // Tos
-          Column(modifier = Modifier.fillMaxWidth().semantics(mergeDescendants = true) {}) {
-            Text(
-              stringResource(R.string.settings_dialog_tos_title),
-              style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Medium),
-            )
-            OutlinedButton(onClick = { showTos = true }) {
-              Text(stringResource(R.string.settings_dialog_view_app_terms_of_service))
-            }
-            ClickableLink(
-              url = "https://safecircle.tech/licenses/research",
-              linkText = stringResource(R.string.tos_dialog_title_gemma),
-              modifier = Modifier.padding(top = 4.dp),
-            )
-          }
-
-          // Debug options — only visible in debug builds.
-          if (BuildConfig.DEBUG) {
-            Column(modifier = Modifier.fillMaxWidth().semantics(mergeDescendants = true) {}) {
-              Text(
-                "Developer",
-                style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Medium),
+          Text("Theme", style = MaterialTheme.typography.titleMedium)
+          SingleChoiceSegmentedButtonRow(modifier = Modifier.fillMaxWidth()) {
+            THEME_OPTIONS.forEachIndexed { index, theme ->
+              SegmentedButton(
+                shape = SegmentedButtonDefaults.itemShape(index = index, count = THEME_OPTIONS.size),
+                onClick = {
+                  selectedTheme = theme
+                  ThemeSettings.themeOverride.value = theme
+                  modelManagerViewModel.saveThemeOverride(theme)
+                  val uiModeManager =
+                    context.applicationContext.getSystemService(Context.UI_MODE_SERVICE)
+                      as UiModeManager
+                  when (theme) {
+                    Theme.THEME_AUTO ->
+                      uiModeManager.setApplicationNightMode(UiModeManager.MODE_NIGHT_AUTO)
+                    Theme.THEME_LIGHT ->
+                      uiModeManager.setApplicationNightMode(UiModeManager.MODE_NIGHT_NO)
+                    else -> uiModeManager.setApplicationNightMode(UiModeManager.MODE_NIGHT_YES)
+                  }
+                },
+                selected = theme == selectedTheme,
+                label = {
+                  Text(themeLabel(theme), style = MaterialTheme.typography.labelMedium, maxLines = 1)
+                },
               )
-              Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween,
-              ) {
-                Column(modifier = Modifier.weight(1f)) {
-                  Text("Show raw model output", style = MaterialTheme.typography.bodyMedium)
-                  Text(
-                    "Safety Detection: show full JSON response",
-                    style = labelSmallNarrow,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                  )
-                }
-                Switch(
-                  checked = showRawOutput,
-                  onCheckedChange = { DebugSettings.setShowRawOutput(context, it) },
-                )
-              }
             }
           }
         }
+      }
 
-        // Button row.
-        Row(
-          modifier = Modifier.fillMaxWidth().padding(top = 8.dp),
-          horizontalArrangement = Arrangement.End,
-        ) {
-          // Close button
-          Button(onClick = { onDismissed() }) { Text("Close") }
+      SettingsSection("About & legal") {
+        SettingsRow(
+          icon = Icons.Rounded.Code,
+          title = "Third-party libraries",
+          subtitle = "View licenses",
+          trailing = Icons.Rounded.ChevronRight,
+          onClick = {
+            // Launch a license viewer listing third-party library names; tapping one shows its
+            // license content.
+            context.startActivity(Intent(context, OssLicensesMenuActivity::class.java))
+          },
+        )
+        HorizontalDivider(modifier = Modifier.padding(start = 72.dp))
+        SettingsRow(
+          icon = Icons.Rounded.Description,
+          title = stringResource(R.string.settings_dialog_tos_title),
+          subtitle = stringResource(R.string.settings_dialog_view_app_terms_of_service),
+          trailing = Icons.Rounded.ChevronRight,
+          onClick = { showTos = true },
+        )
+        HorizontalDivider(modifier = Modifier.padding(start = 72.dp))
+        SettingsRow(
+          icon = Icons.Rounded.Gavel,
+          title = stringResource(R.string.tos_dialog_title_gemma),
+          subtitle = "safecircle.tech",
+          trailing = Icons.AutoMirrored.Rounded.OpenInNew,
+          onClick = {
+            uriHandler.openUri(MODEL_LICENSE_URL)
+            logEvent(
+              GalleryEvent.BUTTON_CLICKED,
+              mapOf("event_type" to "resource_link_click", "link_destination" to MODEL_LICENSE_URL),
+            )
+          },
+        )
+      }
+
+      // Debug options — only visible in debug builds.
+      if (BuildConfig.DEBUG) {
+        SettingsSection("Developer") {
+          Row(
+            modifier = Modifier.fillMaxWidth().padding(16.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(16.dp),
+          ) {
+            RowIcon(Icons.Rounded.BugReport)
+            Column(modifier = Modifier.weight(1f)) {
+              Text("Show raw model output", style = MaterialTheme.typography.titleMedium)
+              Text(
+                "Safety Detection: show full JSON response",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+              )
+            }
+            Switch(
+              checked = showRawOutput,
+              onCheckedChange = { DebugSettings.setShowRawOutput(context, it) },
+            )
+          }
         }
       }
     }
@@ -232,6 +211,97 @@ fun SettingsDialog(
 
   if (showTos) {
     AppTosDialog(onTosAccepted = { showTos = false }, viewingMode = true)
+  }
+}
+
+@Composable
+private fun SettingsHeader() {
+  Row(
+    verticalAlignment = Alignment.CenterVertically,
+    horizontalArrangement = Arrangement.spacedBy(16.dp),
+  ) {
+    ShapeBadge(
+      index = 0,
+      containerColor = MaterialTheme.colorScheme.primary,
+      contentColor = MaterialTheme.colorScheme.onPrimary,
+      size = 56.dp,
+    ) {
+      Icon(Icons.Rounded.Settings, contentDescription = null, modifier = Modifier.size(28.dp))
+    }
+    Column {
+      Text(
+        "Settings",
+        style = MaterialTheme.typography.headlineMediumEmphasized,
+        fontFamily = heroFontFamily,
+        fontWeight = FontWeight.ExtraBold,
+      )
+      Text(
+        "App version ${BuildConfig.VERSION_NAME} (${BuildConfig.VERSION_CODE})",
+        style = MaterialTheme.typography.labelLarge,
+        color = MaterialTheme.colorScheme.onSurfaceVariant,
+      )
+    }
+  }
+}
+
+/** A titled group of settings drawn as one tonal container. */
+@Composable
+private fun SettingsSection(title: String, content: @Composable ColumnScope.() -> Unit) {
+  Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+    Text(
+      title,
+      style = MaterialTheme.typography.labelLargeEmphasized,
+      color = MaterialTheme.colorScheme.primary,
+      modifier = Modifier.padding(horizontal = 8.dp),
+    )
+    Surface(
+      shape = MaterialTheme.shapes.extraLargeIncreased,
+      color = MaterialTheme.colorScheme.surfaceContainerHigh,
+    ) {
+      Column(content = content)
+    }
+  }
+}
+
+@Composable
+private fun SettingsRow(
+  icon: ImageVector,
+  title: String,
+  subtitle: String,
+  trailing: ImageVector,
+  onClick: () -> Unit,
+) {
+  Row(
+    modifier = Modifier.fillMaxWidth().clickable(onClick = onClick).padding(16.dp),
+    verticalAlignment = Alignment.CenterVertically,
+    horizontalArrangement = Arrangement.spacedBy(16.dp),
+  ) {
+    RowIcon(icon)
+    Column(modifier = Modifier.weight(1f)) {
+      Text(title, style = MaterialTheme.typography.titleMedium)
+      Text(
+        subtitle,
+        style = MaterialTheme.typography.bodyMedium,
+        color = MaterialTheme.colorScheme.onSurfaceVariant,
+      )
+    }
+    Icon(trailing, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
+  }
+}
+
+@Composable
+private fun RowIcon(icon: ImageVector) {
+  Surface(
+    shape = CircleShape,
+    color = MaterialTheme.colorScheme.secondaryContainer,
+    modifier = Modifier.size(ROW_ICON_SIZE),
+  ) {
+    Icon(
+      icon,
+      contentDescription = null,
+      tint = MaterialTheme.colorScheme.onSecondaryContainer,
+      modifier = Modifier.padding(10.dp),
+    )
   }
 }
 

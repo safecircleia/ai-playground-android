@@ -151,7 +151,7 @@ fun AudioPlaybackPanel(
           stringResource(
             if (isPlaying) R.string.cd_stop_playback_icon else R.string.cd_play_audio_icon
           ),
-        tint = if (onDarkBg) Color.White else MaterialTheme.colorScheme.primary,
+        tint = if (onDarkBg) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.primary,
       )
     }
 
@@ -168,7 +168,7 @@ fun AudioPlaybackPanel(
     Text(
       "${"%.1f".format(durationInSeconds)}s",
       style = MaterialTheme.typography.labelLarge,
-      color = if (onDarkBg) Color.White else MaterialTheme.colorScheme.onSurfaceVariant,
+      color = if (onDarkBg) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.onSurfaceVariant,
       modifier = Modifier.padding(start = 12.dp),
     )
   }
@@ -182,7 +182,7 @@ private fun AmplitudeBarGraph(
   onDarkBg: Boolean = false,
 ) {
   val barColor = MaterialTheme.customColors.waveFormBgColor
-  val progressColor = if (onDarkBg) Color.White else MaterialTheme.colorScheme.primary
+  val progressColor = if (onDarkBg) MaterialTheme.colorScheme.onPrimary else MaterialTheme.colorScheme.primary
 
   Canvas(modifier = modifier) {
     val barCount = amplitudeLevels.size

@@ -19,7 +19,10 @@ package com.safecircle.aiplayground.ui.theme
 import android.app.Activity
 import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.material3.ColorScheme
+import androidx.compose.material3.MaterialExpressiveTheme
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.MotionScheme
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.dynamicDarkColorScheme
 import androidx.compose.material3.dynamicLightColorScheme
@@ -35,6 +38,7 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.platform.LocalView
 import androidx.core.view.WindowCompat
 import com.safecircle.aiplayground.proto.Theme
@@ -119,14 +123,12 @@ private val darkScheme =
 
 @Immutable
 data class CustomColors(
-  val appTitleGradientColors: List<Color> = listOf(),
-  val tabHeaderBgColor: Color = Color.Transparent,
   val taskCardBgColor: Color = Color.Transparent,
   val taskBgColors: List<Color> = listOf(),
+  val taskOnBgColors: List<Color> = listOf(),
+  val taskOnIconColors: List<Color> = listOf(),
   val taskBgGradientColors: List<List<Color>> = listOf(),
   val taskIconColors: List<Color> = listOf(),
-  val taskIconShapeBgColor: Color = Color.Transparent,
-  val homeBottomGradient: List<Color> = listOf(),
   val userBubbleBgColor: Color = Color.Transparent,
   val agentBubbleBgColor: Color = Color.Transparent,
   val linkColor: Color = Color.Transparent,
@@ -140,7 +142,6 @@ data class CustomColors(
   val errorTextColor: Color = Color.Transparent,
   val newFeatureContainerColor: Color = Color.Transparent,
   val newFeatureTextColor: Color = Color.Transparent,
-  val bgStarColor: Color = Color.Transparent,
   val promoBannerBgBrush: Brush = Brush.verticalGradient(listOf(Color.Transparent)),
   val promoBannerIconBgBrush: Brush = Brush.verticalGradient(listOf(Color.Transparent)),
   val experimentalGradientColors: List<Color> = listOf(Color.Transparent),
@@ -150,44 +151,6 @@ val LocalCustomColors = staticCompositionLocalOf { CustomColors() }
 
 val lightCustomColors =
   CustomColors(
-    appTitleGradientColors = listOf(Color(0xFF85B1F8), Color(0xFF3174F1)),
-    tabHeaderBgColor = Color(0xFF3174F1),
-    taskCardBgColor = surfaceContainerLowestLight,
-    taskBgColors =
-      listOf(
-        // red
-        Color(0xFFFFF5F5),
-        // green
-        Color(0xFFF4FBF6),
-        // blue
-        Color(0xFFF1F6FE),
-        // yellow
-        Color(0xFFFFFBF0),
-      ),
-    taskBgGradientColors =
-      listOf(
-        // red
-        listOf(Color(0xFFE25F57), Color(0xFFDB372D)),
-        // green
-        listOf(Color(0xFF41A15F), Color(0xFF128937)),
-        // blue
-        listOf(Color(0xFF669DF6), Color(0xFF3174F1)),
-        // yellow
-        listOf(Color(0xFFFDD45D), Color(0xFFCAA12A)),
-      ),
-    taskIconColors =
-      listOf(
-        // red.
-        Color(0xFFDB372D),
-        // green
-        Color(0xFF128937),
-        // blue
-        Color(0xFF3174F1),
-        // yellow
-        Color(0xFFCAA12A),
-      ),
-    taskIconShapeBgColor = Color.White,
-    homeBottomGradient = listOf(Color(0x00F8F9FF), Color(0xffFFEFC9)),
     agentBubbleBgColor = Color(0xFFe9eef6),
     userBubbleBgColor = Color(0xFF32628D),
     linkColor = Color(0xFF32628D),
@@ -201,7 +164,6 @@ val lightCustomColors =
     errorTextColor = Color(0xffd93025),
     newFeatureContainerColor = Color(0xFFEEDCFE),
     newFeatureTextColor = Color(0xFF400B84),
-    bgStarColor = Color(0x3A669AF5),
     promoBannerBgBrush =
       Brush.linearGradient(
         colorStops =
@@ -233,44 +195,6 @@ val lightCustomColors =
 
 val darkCustomColors =
   CustomColors(
-    appTitleGradientColors = listOf(Color(0xFF85B1F8), Color(0xFF3174F1)),
-    tabHeaderBgColor = Color(0xFF3174F1),
-    taskCardBgColor = surfaceContainerHighDark,
-    taskBgColors =
-      listOf(
-        // red
-        Color(0xFF181210),
-        // green
-        Color(0xFF131711),
-        // blue
-        Color(0xFF191924),
-        // yellow
-        Color(0xFF1A1813),
-      ),
-    taskBgGradientColors =
-      listOf(
-        // red
-        listOf(Color(0xFFE25F57), Color(0xFFDB372D)),
-        // green
-        listOf(Color(0xFF41A15F), Color(0xFF128937)),
-        // blue
-        listOf(Color(0xFF669DF6), Color(0xFF3174F1)),
-        // yellow
-        listOf(Color(0xFFFDD45D), Color(0xFFCAA12A)),
-      ),
-    taskIconColors =
-      listOf(
-        // red.
-        Color(0xFFE25F57),
-        // green
-        Color(0xFF41A15F),
-        // blue
-        Color(0xFF669DF6),
-        // yellow
-        Color(0xFFCAA12A),
-      ),
-    taskIconShapeBgColor = Color(0xFF202124),
-    homeBottomGradient = listOf(Color(0x00F8F9FF), Color(0x1AF6AD01)),
     agentBubbleBgColor = Color(0xFF1b1c1d),
     userBubbleBgColor = Color(0xFF1f3760),
     linkColor = Color(0xFF9DCAFC),
@@ -284,7 +208,6 @@ val darkCustomColors =
     errorTextColor = Color(0xffee675c),
     newFeatureContainerColor = Color(0xFFEEDCFE),
     newFeatureTextColor = Color(0xFF400B84),
-    bgStarColor = Color(0x19346BF0),
     promoBannerBgBrush =
       Brush.linearGradient(
         colorStops = arrayOf(0.0f to Color(0x82183570), 0.8077f to Color(0x820A122D)),
@@ -310,6 +233,42 @@ val darkCustomColors =
 
 val MaterialTheme.customColors: CustomColors
   @Composable @ReadOnlyComposable get() = LocalCustomColors.current
+
+private const val GRADIENT_END_BLEND = 0.3f
+
+/**
+ * Fills the task palette from the active [ColorScheme] so it follows dynamic colour, dark mode
+ * and contrast settings. Tasks cycle through 4 accents by index.
+ */
+fun CustomColors.withTaskPalette(scheme: ColorScheme): CustomColors {
+  val accents = listOf(scheme.primary, scheme.tertiary, scheme.secondary, scheme.error)
+  return copy(
+    taskCardBgColor = scheme.surfaceContainer,
+    taskBgColors =
+      listOf(
+        scheme.primaryContainer,
+        scheme.tertiaryContainer,
+        scheme.secondaryContainer,
+        scheme.errorContainer,
+      ),
+    taskOnBgColors =
+      listOf(
+        scheme.onPrimaryContainer,
+        scheme.onTertiaryContainer,
+        scheme.onSecondaryContainer,
+        scheme.onErrorContainer,
+      ),
+    taskOnIconColors =
+      listOf(
+        scheme.onPrimary,
+        scheme.onTertiary,
+        scheme.onSecondary,
+        scheme.onError,
+      ),
+    taskBgGradientColors = accents.map { listOf(it, lerp(it, scheme.surface, GRADIENT_END_BLEND)) },
+    taskIconColors = accents,
+  )
+}
 
 /**
  * Controls the color of the phone's status bar icons based on whether the app is using a dark
@@ -366,10 +325,17 @@ fun GalleryTheme(content: @Composable () -> Unit) {
       onSurfaceVariant = baseScheme.onSurfaceVariant,
     ) else baseScheme
 
-  val customColorsPalette = if (darkTheme) darkCustomColors else lightCustomColors
+  val customColorsPalette =
+    (if (darkTheme) darkCustomColors else lightCustomColors).withTaskPalette(colorScheme)
 
   CompositionLocalProvider(LocalCustomColors provides customColorsPalette) {
-    MaterialTheme(colorScheme = colorScheme, typography = AppTypography, shapes = AppShapes, content = content)
+    MaterialExpressiveTheme(
+      colorScheme = colorScheme,
+      motionScheme = MotionScheme.expressive(),
+      shapes = AppShapes,
+      typography = AppTypography,
+      content = content,
+    )
   }
 
   // Make sure the navigation bar stays transparent on manual theme changes.

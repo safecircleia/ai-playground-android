@@ -21,20 +21,43 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Shapes
 import androidx.compose.material3.Typography
 import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontVariation
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.safecircle.aiplayground.R
 
+private const val DEFAULT_WIDTH = 100f
+private const val HERO_WIDTH = 125f
+
+// Roboto Flex is Material 3 Expressive's typeface: one variable font whose weight and width axes
+// are driven per style instead of shipping a static file per weight.
+private fun robotoFlex(weight: FontWeight, width: Float = DEFAULT_WIDTH) =
+  Font(
+    R.font.roboto_flex,
+    weight = weight,
+    variationSettings =
+      FontVariation.Settings(FontVariation.weight(weight.weight), FontVariation.width(width)),
+  )
+
 val appFontFamily =
   FontFamily(
-    Font(R.font.nunito_regular, FontWeight.Normal),
-    Font(R.font.nunito_extralight, FontWeight.ExtraLight),
-    Font(R.font.nunito_light, FontWeight.Light),
-    Font(R.font.nunito_medium, FontWeight.Medium),
-    Font(R.font.nunito_semibold, FontWeight.SemiBold),
-    Font(R.font.nunito_bold, FontWeight.Bold),
-    Font(R.font.nunito_extrabold, FontWeight.ExtraBold),
-    Font(R.font.nunito_black, FontWeight.Black),
+    robotoFlex(FontWeight.ExtraLight),
+    robotoFlex(FontWeight.Light),
+    robotoFlex(FontWeight.Normal),
+    robotoFlex(FontWeight.Medium),
+    robotoFlex(FontWeight.SemiBold),
+    robotoFlex(FontWeight.Bold),
+    robotoFlex(FontWeight.ExtraBold),
+    robotoFlex(FontWeight.Black),
+  )
+
+/** Wider, heavier Roboto Flex for hero/brand titles (use at large sizes only). */
+val heroFontFamily =
+  FontFamily(
+    robotoFlex(FontWeight.SemiBold, HERO_WIDTH),
+    robotoFlex(FontWeight.Bold, HERO_WIDTH),
+    robotoFlex(FontWeight.ExtraBold, HERO_WIDTH),
   )
 
 val baseline = Typography()
@@ -56,6 +79,21 @@ val AppTypography =
     labelLarge = baseline.labelLarge.copy(fontFamily = appFontFamily),
     labelMedium = baseline.labelMedium.copy(fontFamily = appFontFamily),
     labelSmall = baseline.labelSmall.copy(fontFamily = appFontFamily),
+    displayLargeEmphasized = baseline.displayLargeEmphasized.copy(fontFamily = appFontFamily),
+    displayMediumEmphasized = baseline.displayMediumEmphasized.copy(fontFamily = appFontFamily),
+    displaySmallEmphasized = baseline.displaySmallEmphasized.copy(fontFamily = appFontFamily),
+    headlineLargeEmphasized = baseline.headlineLargeEmphasized.copy(fontFamily = appFontFamily),
+    headlineMediumEmphasized = baseline.headlineMediumEmphasized.copy(fontFamily = appFontFamily),
+    headlineSmallEmphasized = baseline.headlineSmallEmphasized.copy(fontFamily = appFontFamily),
+    titleLargeEmphasized = baseline.titleLargeEmphasized.copy(fontFamily = appFontFamily),
+    titleMediumEmphasized = baseline.titleMediumEmphasized.copy(fontFamily = appFontFamily),
+    titleSmallEmphasized = baseline.titleSmallEmphasized.copy(fontFamily = appFontFamily),
+    bodyLargeEmphasized = baseline.bodyLargeEmphasized.copy(fontFamily = appFontFamily),
+    bodyMediumEmphasized = baseline.bodyMediumEmphasized.copy(fontFamily = appFontFamily),
+    bodySmallEmphasized = baseline.bodySmallEmphasized.copy(fontFamily = appFontFamily),
+    labelLargeEmphasized = baseline.labelLargeEmphasized.copy(fontFamily = appFontFamily),
+    labelMediumEmphasized = baseline.labelMediumEmphasized.copy(fontFamily = appFontFamily),
+    labelSmallEmphasized = baseline.labelSmallEmphasized.copy(fontFamily = appFontFamily),
   )
 
 val titleMediumNarrow =
@@ -90,28 +128,29 @@ val bodySmallMediumNarrowBold =
     fontWeight = FontWeight.Bold,
   )
 
-val homePageTitleStyle =
-  baseline.displayMedium.copy(
-    fontFamily = appFontFamily,
-    fontSize = 48.sp,
-    lineHeight = 48.sp,
-    letterSpacing = -1.sp,
-    fontWeight = FontWeight.Medium,
-  )
-
 val bodyLargeNarrow = baseline.bodyLarge.copy(letterSpacing = 0.2.sp)
 val bodyMediumMedium = baseline.bodyMedium.copy(fontWeight = FontWeight.Medium)
 
 val headlineLargeMedium = baseline.headlineLarge.copy(fontWeight = FontWeight.Medium)
 
-val emptyStateTitle = baseline.headlineSmall.copy(fontSize = 37.sp, lineHeight = 50.sp)
+val emptyStateTitle =
+  baseline.headlineSmall.copy(
+    fontSize = 37.sp,
+    lineHeight = 44.sp,
+    fontFamily = heroFontFamily,
+    fontWeight = FontWeight.ExtraBold,
+  )
 val emptyStateContent = baseline.headlineSmall.copy(fontSize = 16.sp, lineHeight = 22.sp)
 
-// MD3 shape scale — aligned to spec tokens
-val AppShapes = Shapes(
-  extraSmall = RoundedCornerShape(4),
-  small = RoundedCornerShape(8),
-  medium = RoundedCornerShape(12),
-  large = RoundedCornerShape(16),
-  extraLarge = RoundedCornerShape(28),
-)
+// Material 3 shape scale (dp corners, incl. the expressive "increased" steps).
+val AppShapes =
+  Shapes(
+    extraSmall = RoundedCornerShape(4.dp),
+    small = RoundedCornerShape(8.dp),
+    medium = RoundedCornerShape(12.dp),
+    large = RoundedCornerShape(16.dp),
+    largeIncreased = RoundedCornerShape(20.dp),
+    extraLarge = RoundedCornerShape(28.dp),
+    extraLargeIncreased = RoundedCornerShape(32.dp),
+    extraExtraLarge = RoundedCornerShape(48.dp),
+  )

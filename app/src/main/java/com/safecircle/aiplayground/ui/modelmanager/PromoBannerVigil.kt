@@ -81,19 +81,19 @@ fun PromoBannerVigil(onDismiss: () -> Unit, modifier: Modifier = Modifier) {
         Modifier.fillMaxWidth()
           .background(
             brush = MaterialTheme.customColors.promoBannerBgBrush,
-            shape = RoundedCornerShape(16.dp),
+            shape = MaterialTheme.shapes.extraLargeIncreased,
           )
           .onGloballyPositioned { coordinates ->
             columnHeightDp = with(density) { coordinates.size.height.toDp() }
           }
-          .padding(horizontal = 16.dp)
-          .padding(top = 16.dp, bottom = 8.dp)
+          .padding(horizontal = 20.dp)
+          .padding(top = 20.dp, bottom = 8.dp)
     ) {
-      Text(text = "Vigil: Now available", style = MaterialTheme.typography.titleMedium)
+      Text(text = "Vigil: Now available", style = MaterialTheme.typography.titleMediumEmphasized)
       Text(
         "Vigil is a compact on-device encoder that scores a whole conversation for grooming, bullying, threats and more in a single pass, entirely on the child’s phone, with no messages ever sent or viewed externally. Try it from the Vigil card on the home screen.",
-        style = MaterialTheme.typography.bodyMedium.copy(fontSize = 12.sp, lineHeight = 15.sp),
-        modifier = Modifier.padding(top = 4.dp),
+        style = MaterialTheme.typography.bodySmall,
+        modifier = Modifier.padding(top = 6.dp),
       )
       Row(
         modifier = Modifier.fillMaxWidth().padding(top = 4.dp),

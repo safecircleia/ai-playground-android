@@ -16,6 +16,17 @@
 
 package com.safecircle.aiplayground.ui.modelmanager
 
+import com.safecircle.aiplayground.ui.theme.heroFontFamily
+import com.safecircle.aiplayground.ui.common.expressive.ShapeBadge
+import com.safecircle.aiplayground.ui.common.expressive.ExpressiveCard
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.material3.toShape
+import androidx.compose.material3.MaterialShapes
+import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.layout.widthIn
+import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.LargeFlexibleTopAppBar
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
@@ -252,27 +263,32 @@ fun GlobalModelManager(
     if (selectedSection != null) selectedSection = null else navigateUp()
   }
 
+  val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
   Scaffold(
-    modifier = modifier,
+    modifier = modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
+    containerColor = MaterialTheme.colorScheme.surface,
     topBar = {
-      CenterAlignedTopAppBar(
+      LargeFlexibleTopAppBar(
+        title = {
+          Text(
+            text = selectedSection ?: stringResource(R.string.drawer_models_label),
+            fontFamily = heroFontFamily,
+            fontWeight = FontWeight.ExtraBold,
+          )
+        },
+        subtitle =
+          if (selectedSection == null) {
+            { Text(stringResource(R.string.drawer_models_description)) }
+          } else null,
         navigationIcon = {
           if (selectedSection != null) {
             IconButton(onClick = { selectedSection = null }) {
               Icon(
                 imageVector = Icons.AutoMirrored.Rounded.ArrowBack,
                 contentDescription = "Back",
-                tint = MaterialTheme.colorScheme.onSurface,
               )
             }
           }
-        },
-        title = {
-          Text(
-            text = selectedSection ?: stringResource(R.string.drawer_models_label),
-            color = MaterialTheme.colorScheme.onSurface,
-            style = MaterialTheme.typography.titleMedium,
-          )
         },
         actions = {
           if (selectedSection == null) {
@@ -280,12 +296,11 @@ fun GlobalModelManager(
               Icon(
                 imageVector = Icons.Rounded.Close,
                 contentDescription = stringResource(R.string.cd_close_icon),
-                tint = MaterialTheme.colorScheme.onSurface,
               )
             }
           }
         },
-        modifier = modifier,
+        scrollBehavior = scrollBehavior,
       )
     },
   ) { innerPadding ->
@@ -296,7 +311,6 @@ fun GlobalModelManager(
     Box(
       modifier = Modifier
         .fillMaxSize()
-        .background(MaterialTheme.colorScheme.surfaceContainer)
         .padding(top = innerPadding.calculateTopPadding())
     ) {
       AnimatedContent(
@@ -309,12 +323,13 @@ fun GlobalModelManager(
           }
         },
         modifier = Modifier.fillMaxSize(),
+        contentAlignment = Alignment.TopCenter,
         label = "section_nav",
       ) { section ->
         if (section == null) {
           // ── Category list ──────────────────────────────────────────────
           LazyColumn(
-            modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
+            modifier = Modifier.widthIn(max = 840.dp).fillMaxWidth().padding(horizontal = 16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp),
             contentPadding = PaddingValues(
               top = 16.dp,
@@ -354,11 +369,12 @@ fun GlobalModelManager(
               ),
             )
 
-            items(categories, key = { it.name }) { category ->
+            itemsIndexed(categories, key = { _, category -> category.name }) { index, category ->
               val count = modelsBySection[category.name]?.size ?: 0
               ModelCategoryCard(
                 category = category,
                 modelCount = count,
+                index = index,
                 onClick = { selectedSection = category.name },
               )
             }
@@ -392,7 +408,7 @@ fun GlobalModelManager(
           val isExperimental = section == "Experimental"
 
           LazyColumn(
-            modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp),
+            modifier = Modifier.widthIn(max = 840.dp).fillMaxWidth().padding(horizontal = 16.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp),
             contentPadding = PaddingValues(
               top = 16.dp,
@@ -693,157 +709,162 @@ private data class ModelCategory(
   val isExperimental: Boolean,
 )
 
+private val CATEGORY_BADGE_SIZE = 64.dp
+private const val CATEGORY_SECONDARY_ALPHA = 0.78f
+
 @Composable
 private fun ModelCategoryCard(
   category: ModelCategory,
   modelCount: Int,
+  index: Int,
   onClick: () -> Unit,
 ) {
+  val colors = MaterialTheme.customColors
+  val slot = index % colors.taskBgColors.size
+  val onContainer = colors.taskOnBgColors[slot]
   if (category.isExperimental) {
-    val gradientColors = MaterialTheme.customColors.experimentalGradientColors
-    val infiniteTransition = rememberInfiniteTransition(label = "exp_border")
-    val angle by infiniteTransition.animateFloat(
+    ExperimentalCategoryCard(category, modelCount, onClick)
+    return
+  }
+  val icon =
+    if (category.name == "Horizon Edge") Icons.Outlined.DevicesOther
+    else Icons.AutoMirrored.Rounded.ListAlt
+  ExpressiveCard(
+    onClick = onClick,
+    modifier = Modifier.fillMaxWidth(),
+    containerColor = colors.taskBgColors[slot],
+    shape = MaterialTheme.shapes.extraLargeIncreased,
+  ) {
+    Row(
+      modifier = Modifier.fillMaxWidth().padding(20.dp),
+      verticalAlignment = Alignment.CenterVertically,
+      horizontalArrangement = Arrangement.spacedBy(16.dp),
+    ) {
+      ShapeBadge(
+        index = index,
+        containerColor = colors.taskIconColors[slot],
+        contentColor = colors.taskOnIconColors[slot],
+        size = CATEGORY_BADGE_SIZE,
+      ) {
+        Icon(icon, contentDescription = null, modifier = Modifier.size(32.dp))
+      }
+      CategoryText(category, modelCount, onContainer, Modifier.weight(1f))
+      Icon(Icons.Outlined.ChevronRight, contentDescription = null, tint = onContainer)
+    }
+  }
+}
+
+@Composable
+private fun CategoryText(
+  category: ModelCategory,
+  modelCount: Int,
+  onContainer: Color,
+  modifier: Modifier = Modifier,
+) {
+  Column(modifier = modifier, verticalArrangement = Arrangement.spacedBy(4.dp)) {
+    Row(
+      verticalAlignment = Alignment.CenterVertically,
+      horizontalArrangement = Arrangement.spacedBy(8.dp),
+    ) {
+      Text(
+        category.name,
+        style = MaterialTheme.typography.titleLargeEmphasized,
+        color = onContainer,
+      )
+      if (modelCount > 0) {
+        Surface(shape = CircleShape, color = onContainer.copy(alpha = 0.14f)) {
+          Text(
+            "$modelCount",
+            style = MaterialTheme.typography.labelLargeEmphasized,
+            color = onContainer,
+            modifier = Modifier.padding(horizontal = 10.dp, vertical = 2.dp),
+          )
+        }
+      }
+    }
+    Text(
+      category.description,
+      style = MaterialTheme.typography.bodyMedium,
+      color = onContainer.copy(alpha = CATEGORY_SECONDARY_ALPHA),
+    )
+  }
+}
+
+/** Experimental keeps its animated gradient border, restyled with the expressive shapes. */
+@Composable
+private fun ExperimentalCategoryCard(
+  category: ModelCategory,
+  modelCount: Int,
+  onClick: () -> Unit,
+) {
+  val gradientColors = MaterialTheme.customColors.experimentalGradientColors
+  val infiniteTransition = rememberInfiniteTransition(label = "exp_border")
+  val angle by
+    infiniteTransition.animateFloat(
       initialValue = 0f,
       targetValue = 360f,
       animationSpec = infiniteRepeatable(tween(3000, easing = LinearEasing), RepeatMode.Restart),
       label = "exp_border_angle",
     )
-    val containerColor = MaterialTheme.colorScheme.surfaceContainerHigh
-    Card(
-      onClick = onClick,
-      modifier = Modifier.fillMaxWidth(),
-      shape = RoundedCornerShape(16.dp),
-      colors = CardDefaults.cardColors(containerColor = Color.Transparent),
-    ) {
-      Box(
-        modifier = Modifier
-          .fillMaxWidth()
+  val onSurface = MaterialTheme.colorScheme.onSurface
+  val outer = MaterialTheme.shapes.extraLargeIncreased
+  Card(
+    onClick = onClick,
+    modifier = Modifier.fillMaxWidth(),
+    shape = outer,
+    colors = CardDefaults.cardColors(containerColor = Color.Transparent),
+  ) {
+    Box(
+      modifier =
+        Modifier.fillMaxWidth()
           .drawBehind {
             val angleRad = Math.toRadians(angle.toDouble())
             val cx = size.width / 2f
             val cy = size.height / 2f
             val r = kotlin.math.sqrt(cx * cx + cy * cy)
             drawRect(
-              brush = Brush.linearGradient(
-                colors = gradientColors,
-                start = Offset(
-                  cx + (-r * kotlin.math.cos(angleRad)).toFloat(),
-                  cy + (-r * kotlin.math.sin(angleRad)).toFloat(),
+              brush =
+                Brush.linearGradient(
+                  colors = gradientColors,
+                  start =
+                    Offset(
+                      cx + (-r * kotlin.math.cos(angleRad)).toFloat(),
+                      cy + (-r * kotlin.math.sin(angleRad)).toFloat(),
+                    ),
+                  end =
+                    Offset(
+                      cx + (r * kotlin.math.cos(angleRad)).toFloat(),
+                      cy + (r * kotlin.math.sin(angleRad)).toFloat(),
+                    ),
                 ),
-                end = Offset(
-                  cx + (r * kotlin.math.cos(angleRad)).toFloat(),
-                  cy + (r * kotlin.math.sin(angleRad)).toFloat(),
-                ),
-              ),
               size = size,
             )
           }
-          .padding(2.dp)
-          .clip(RoundedCornerShape(14.dp))
-          .background(containerColor)
-          .padding(16.dp),
-      ) {
-        Row(
-          verticalAlignment = Alignment.CenterVertically,
-          horizontalArrangement = Arrangement.spacedBy(12.dp),
-        ) {
-          Box(
-            modifier = Modifier
-              .size(44.dp)
-              .clip(RoundedCornerShape(12.dp))
-              .background(Brush.linearGradient(gradientColors.take(3))),
-            contentAlignment = Alignment.Center,
-          ) {
-            Icon(
-              Icons.Outlined.AutoAwesome,
-              contentDescription = null,
-              tint = MaterialTheme.colorScheme.onPrimary,
-              modifier = Modifier.size(22.dp),
-            )
-          }
-          Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
-            Text(
-              category.name,
-              style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
-              color = MaterialTheme.colorScheme.onSurface,
-            )
-            Text(
-              category.description,
-              style = MaterialTheme.typography.bodySmall,
-              color = MaterialTheme.colorScheme.onSurfaceVariant,
-            )
-          }
-          Icon(
-            Icons.Outlined.ChevronRight,
-            contentDescription = null,
-            tint = MaterialTheme.colorScheme.onSurfaceVariant,
-          )
-        }
-      }
-    }
-  } else {
-    val icon = if (category.name == "Horizon Edge") Icons.Outlined.DevicesOther
-               else Icons.AutoMirrored.Rounded.ListAlt
-    Card(
-      modifier = Modifier.fillMaxWidth(),
-      shape = RoundedCornerShape(16.dp),
-      colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerHigh),
-      onClick = onClick,
+          .padding(3.dp)
+          .clip(MaterialTheme.shapes.extraLarge)
+          .background(MaterialTheme.colorScheme.surfaceContainerHigh)
+          .padding(20.dp)
     ) {
       Row(
-        modifier = Modifier.padding(16.dp),
         verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(12.dp),
+        horizontalArrangement = Arrangement.spacedBy(16.dp),
       ) {
         Box(
-          modifier = Modifier
-            .size(44.dp)
-            .clip(RoundedCornerShape(12.dp))
-            .background(MaterialTheme.colorScheme.primaryContainer),
+          modifier =
+            Modifier.size(CATEGORY_BADGE_SIZE)
+              .clip(MaterialShapes.SoftBurst.toShape())
+              .background(Brush.linearGradient(gradientColors.take(3))),
           contentAlignment = Alignment.Center,
         ) {
           Icon(
-            icon,
+            Icons.Outlined.AutoAwesome,
             contentDescription = null,
-            tint = MaterialTheme.colorScheme.onPrimaryContainer,
-            modifier = Modifier.size(22.dp),
+            tint = Color.White,
+            modifier = Modifier.size(32.dp),
           )
         }
-        Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
-          Row(
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(6.dp),
-          ) {
-            Text(
-              category.name,
-              style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
-              color = MaterialTheme.colorScheme.onSurface,
-            )
-            if (modelCount > 0) {
-              Surface(
-                shape = RoundedCornerShape(4.dp),
-                color = MaterialTheme.colorScheme.primaryContainer,
-              ) {
-                Text(
-                  "$modelCount",
-                  style = MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold),
-                  color = MaterialTheme.colorScheme.onPrimaryContainer,
-                  modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
-                )
-              }
-            }
-          }
-          Text(
-            category.description,
-            style = MaterialTheme.typography.bodySmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-          )
-        }
-        Icon(
-          Icons.Outlined.ChevronRight,
-          contentDescription = null,
-          tint = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
+        CategoryText(category, modelCount, onSurface, Modifier.weight(1f))
+        Icon(Icons.Outlined.ChevronRight, contentDescription = null, tint = onSurface)
       }
     }
   }

@@ -31,11 +31,14 @@ import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import com.safecircle.aiplayground.GalleryTopAppBar
 import com.safecircle.aiplayground.data.AppBarAction
 import com.safecircle.aiplayground.data.AppBarActionType
 import com.safecircle.aiplayground.data.Model
 import com.safecircle.aiplayground.data.Task
+import com.safecircle.aiplayground.ui.common.TaskIcon
+import com.safecircle.aiplayground.ui.common.expressive.sharedBadge
 
 /** A screen to manage models. */
 @OptIn(ExperimentalMaterial3Api::class)
@@ -48,6 +51,9 @@ fun ModelManager(
   onModelClicked: (Model) -> Unit,
   modifier: Modifier = Modifier,
   onBenchmarkClicked: (Model) -> Unit = {},
+  // True when shown as the detail pane beside the home list: no back button/handler, no shared
+  // badge (the home card already shows it).
+  embedded: Boolean = false,
 ) {
   // Set title based on the task.
   val title = task.label
@@ -71,14 +77,23 @@ fun ModelManager(
   }
 
   // Handle system's edge swipe.
-  BackHandler { navigateUp() }
+  BackHandler(enabled = !embedded) { navigateUp() }
 
   Scaffold(
     modifier = modifier,
     topBar = {
       GalleryTopAppBar(
         title = title,
-        leftAction = AppBarAction(actionType = AppBarActionType.NAVIGATE_UP, actionFn = navigateUp),
+        leftAction =
+          if (embedded) null
+          else AppBarAction(actionType = AppBarActionType.NAVIGATE_UP, actionFn = navigateUp),
+        titleIcon = {
+          TaskIcon(
+            task = task,
+            modifier = Modifier.sharedBadge(task.id, enabled = !embedded),
+            width = 32.dp,
+          )
+        },
       )
     },
   ) { innerPadding ->
