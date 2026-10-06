@@ -19,7 +19,9 @@ package com.safecircle.aiplayground.ui.theme
 import android.app.Activity
 import android.os.Build
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.material3.MaterialExpressiveTheme
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.MotionScheme
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.dynamicDarkColorScheme
 import androidx.compose.material3.dynamicLightColorScheme
@@ -369,7 +371,13 @@ fun GalleryTheme(content: @Composable () -> Unit) {
   val customColorsPalette = if (darkTheme) darkCustomColors else lightCustomColors
 
   CompositionLocalProvider(LocalCustomColors provides customColorsPalette) {
-    MaterialTheme(colorScheme = colorScheme, typography = AppTypography, shapes = AppShapes, content = content)
+    MaterialExpressiveTheme(
+      colorScheme = colorScheme,
+      motionScheme = MotionScheme.expressive(),
+      shapes = AppShapes,
+      typography = AppTypography,
+      content = content,
+    )
   }
 
   // Make sure the navigation bar stays transparent on manual theme changes.

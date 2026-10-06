@@ -77,6 +77,12 @@ android {
 kotlin {
   compilerOptions {
     jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_11)
+    optIn.addAll(
+      "androidx.compose.material3.ExperimentalMaterial3Api",
+      "androidx.compose.material3.ExperimentalMaterial3ExpressiveApi",
+      "androidx.compose.material3.adaptive.ExperimentalMaterial3AdaptiveApi",
+      "androidx.compose.animation.ExperimentalSharedTransitionApi",
+    )
   }
 }
 
@@ -89,6 +95,9 @@ dependencies {
   implementation(libs.androidx.ui.graphics)
   implementation(libs.androidx.ui.tooling.preview)
   implementation(libs.androidx.material3)
+  implementation(libs.androidx.adaptive)
+  implementation(libs.androidx.adaptive.layout)
+  implementation(libs.androidx.adaptive.navigation)
   implementation(libs.androidx.compose.navigation)
   implementation(libs.kotlinx.serialization.json)
   implementation(libs.kotlin.reflect)
